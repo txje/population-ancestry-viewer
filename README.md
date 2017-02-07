@@ -95,3 +95,10 @@ the metadata file below:
 
 To deploy the viewer under a real web server (say, nginx or Apache), the /services directory should be marked
 to execute CGI. And and all datasets referenced by the metadata file should live under /services/data/...
+
+
+For more details see:
+
+[Comparative analysis and visualization of multiple collinear genomes](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-S3-S13)
+JR Wang, FPM de Villena, L McMillan
+BMC bioinformatics 13 (3), S13
