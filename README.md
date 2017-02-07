@@ -22,8 +22,8 @@ generic mouse annotation, genotypes, ancestry, and phylogenetic trees.
 This generic version currently supports arbitrary VCF and BED annotations. It is
 designed to be as light-weight as possible on the server, while fetching requested
 data with relative efficiency. The server consists of a python CGI script that uses
-tabix to fetch the requested subset of data. A compatible python and tabix
-installation are the only server-side requirements - the data need not be
+tabix to fetch the requested subset of data. A compatible Python with pysam module
+and tabix installation are the only server-side requirements - the data need not be
 preprocessed other than to index the input VCF and BED files using tabix.
 
 Client-side resources not acquired via CDN and not included in this repo include:
@@ -93,17 +93,34 @@ the metadata file below:
     }
 
 
-The data for this demo version can be downloaded from the 1000 Genomes project:
+The data for this demo version use chromsomes 21 and 22 from the MXL population in the 1000 Genomes project:
 
   * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
   * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
   * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
-
-The ancestry zip should be extracted and all files put into /services/data/. To index these data with tabix, do:
   
-  cd services/data/
-  tabix \*.gz
 
+The following should work to install and run the demo on a \*nix platform with Python 2.7+, pysam, and tabix installed:
+
+    git clone https://github.com/txje/population-genomics-viewer
+    cd population-genomics-viewer
+    mkdir incl
+    cd incl
+    wget https://github.com/harvesthq/chosen/releases/download/v1.6.2/chosen_v1.6.2.zip
+    unzip chosen_v1.6.2.zip
+    mv chosen_v1.6.2 chosen
+    cd ..
+    mkdir services/data
+    cd services/data/
+    wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
+    unzip MXL_phase1_ancestry_deconvolution.zip
+    wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
+    wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
+    tabix *.gz
+    cd ../..
+    python PythonCGIServer.py 80
+
+Then visit http://localhost
 
 To deploy the viewer under a real web server (say, nginx or Apache), the /services directory should be marked
 to execute CGI.
