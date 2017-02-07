@@ -309,7 +309,8 @@ function addChroms(chroms) {
         $option.attr('value', chrom);
         $select.append($option);
     }
-    dispBounds(0, chroms[$('#chrom').val()].length);
+    //dispBounds(0, chroms[$('#chrom').val()].length);
+    dispBounds("20M", "20.09M");
 }
 
 function dispBounds(st, en) {

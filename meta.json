@@ -77,49 +77,10 @@
 
   "tracks": [
     {
-      "name": "Consensus SNPs",
-      "maximum_resolution": 1000000,
-      "files": {
-        "*": "All.chr<chrom>.LC1094_UNION_GL.20101123.snp.low_coverage.genotypes.vcf.gz"
-      },
-      "colors": {
-        "REF": [200,200,200,1],
-        "HET": [200,100,0,1],
-        "ALT": [200,0,0,1]
-      },
-      "type": "vcf"
-    },
-    {
-      "name": "Phased haplotypes",
-      "maximum_resolution": 1000000,
-      "files": {
-        "*": "ALL.chr<chrom>.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz"
-      },
-      "colors": {
-        "REF": [200,200,200,1],
-        "HET": [200,100,0,1],
-        "ALT": [200,0,0,1]
-      },
-      "type": "vcf"
-    },
-    {
       "name": "Integrated variants",
       "maximum_resolution": 1000000,
       "files": {
         "*": "ALL.chr<chrom>.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz"
-      },
-      "colors": {
-        "REF": [200,200,200,1],
-        "HET": [200,100,0,1],
-        "ALT": [200,0,0,1]
-      },
-      "type": "vcf"
-    },
-    {
-      "name": "Structural variants",
-      "maximum_resolution": 10000000,
-      "files": {
-        "*": "ALL.wgs.BI_genome_strip_hq.20101123.dels.low_coverage.genotypes.vcf.gz"
       },
       "colors": {
         "REF": [200,200,200,1],

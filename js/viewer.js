@@ -167,7 +167,7 @@ function Viewer(window, size_mult, metadata) {
         
     this.chrom = metadata.chromosomes[0].name;
     this.start = 20000000; //0;
-    this.end = 20099999; //this.chroms[this.chrom].length;
+    this.end = 20090000; //this.chroms[this.chrom].length;
     this.strains = [];
     this.sets = [];
     for(var s = 0; s < metadata.samples.length; s++) {

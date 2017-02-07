@@ -6,3 +6,82 @@ A flexible web-based framework for the visualization of collinear genomic featur
 &copy; 2010-2017 Jeremy Wang
 
 MIT Licensed
+
+
+Overview
+--------
+
+The viewer displays arbitrary collinear genomically-anchored datasets. By collinear,
+I mean the data must be annotated on the same version of the same reference genome.
+
+This tool was originally developed to support the analysis of classical laboratory
+mice (http://msub.csbio.unc.edu) and the Collaborative Cross (http://csbio.unc.edu/ccv).
+These deployments integrate several datasets, including generic mouse annotation,
+genotypes, ancestry, and phylogenetic trees.
+
+This generic version currently supports arbitrary VCF and BED annotations. It is
+designed to be as light-weight as possible on the server, while fetching requested
+data with relative efficiency. The server consists of a python CGI script that uses
+tabix to fetch the requested subset of data. A compatible python and tabix installation
+are the only requirements - the data need not be preprocessed other than to index the
+input VCF and BED files using tabix.
+
+A metadata file (in JSON format) must be constructed for your specific deployment.
+The example deployment using the MXL population from the 1000 Genomes project uses
+the metadata file below:
+
+    {
+      "description": "1000 genomes Phase 1 MXL population chromosomes 21 and 22.<br/>
+                      Coordinates are on NCBI36/hg18.<br/>
+                      <br/>
+                      <i>An integrated map of genetic variation from 1092 human genomes</i>.
+                      Nature 491, 56–65 (01 November 2012) doi:10.1038/nature11632",
+
+      "samples": [
+        {"name": "NA19648", "set": "MXL"},
+        {"name": "NA19660", "set": "MXL"},
+        {"name": "NA19676", "set": "MXL"},
+        {"name": "NA19685", "set": "MXL"},
+        {"name": "NA19723", "set": "MXL"},
+        ...
+       ],
+
+      "chromosomes": [
+        {"name": "21", "length": 46944323, "display": "21 (47 Mbp)"},
+        {"name": "22", "length": 49691432, "display": "22 (50 Mbp)"}
+      ],
+
+      "tracks": [
+        {
+          "name": "Integrated variants",
+          "maximum_resolution": 1000000,
+          "files": {
+            "*": "ALL.chr<chrom>.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz"
+          },
+          "colors": {
+            "REF": [200,200,200,1],
+            "HET": [200,100,0,1],
+            "ALT": [200,0,0,1]
+          },
+          "type": "vcf"
+        },
+        {
+          "name": "Ancestry deconvolution",
+          "maximum_resolution": 0,
+          "files": {
+            "*": "<set>/<sample>.bed.gz"
+          },
+          "colors": {
+            "undet": [200,200,200,1],
+            "0": [0,0,0,1],
+            "1": [200,0,0,1],
+            "2": [0,200,0,1],
+            "3": [0,0,200,1],
+            "4": [200,200,0,1],
+            "5": [200,0,200,1],
+            "6": [0,200,200,1]
+          },
+          "type": "bed"
+        }
+      ]
+    }
