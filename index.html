@@ -288,10 +288,24 @@ function setup() {
         metadata = data;
         viewer = new Viewer(document, 1, metadata);
         document.getElementById('tracks').appendChild(viewer.element);
+        addDescriptions(metadata);
         addSets(viewer.sets);
         addChroms(viewer.chroms);
         $(".chzn-select").chosen();
     });
+}
+
+function addDescriptions(metadata) {
+  $("#overview").append(metadata.description);
+  for(var t in metadata.tracks) {
+    $("#datasets").append("<b>" + metadata.tracks[t].name + "</b><br/>" + metadata.tracks[t].description + "<br/><br/>");
+    $("#datasets").append("Color mapping: ");
+    for(var c in metadata.tracks[t].colors) {
+      var color = metadata.tracks[t].colors[c];
+      $("#datasets").append("<span style='color:rgba(" + color[0] + "," + color[1] + "," + color[2] + "," + color[3] + "); margin-right:10px;'>" + c + "</span>");
+    }
+    $("#datasets").append("<br/><br/>");
+  }
 }
 
 function addChroms(chroms) {
@@ -386,8 +400,13 @@ function addSets(sets) {
           PGV allows the user to select a region of the genome and a set of samples.  The region is selected by specifying the start (e.g. 31200000 or 31200K or 31.2M), and end of the interval and the chromosome (i.e, autosome number and X chromosome).  Samples can be selected by name or by entire set.
           <br/>
           <br/>
+          <h4>Experiment Overview</h4>
+          <div id="overview">
+          </div>
+          <br/>
           <h4>Data sets</h2>
-          <b>Name</b> -- Description...
+          <div id="datasets">
+          </div>
         </p>
       </section>
       </div>

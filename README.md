@@ -93,12 +93,24 @@ the metadata file below:
     }
 
 
+The data for this demo version can be downloaded from the 1000 Genomes project:
+
+  * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
+  * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
+  * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
+
+The ancestry zip should be extracted and all files put into /services/data/. To index these data with tabix, do:
+  
+  cd services/data/
+  tabix \*.gz
+
+
 To deploy the viewer under a real web server (say, nginx or Apache), the /services directory should be marked
-to execute CGI. And and all datasets referenced by the metadata file should live under /services/data/...
+to execute CGI.
 
 
 For more details see:
 
-[Comparative analysis and visualization of multiple collinear genomes](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-S3-S13)
-JR Wang, FPM de Villena, L McMillan
+JR Wang, FPM de Villena, L McMillan.
+[Comparative analysis and visualization of multiple collinear genomes](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-S3-S13).
 BMC bioinformatics 13 (3), S13

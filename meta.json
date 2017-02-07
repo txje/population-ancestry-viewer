@@ -78,6 +78,7 @@
   "tracks": [
     {
       "name": "Integrated variants",
+      "description": "These represent an integrated variant call set based on both low coverage and exome sequencing data from 1092 individuals and contains snps, indels and larger deletions.",
       "maximum_resolution": 1000000,
       "files": {
         "*": "ALL.chr<chrom>.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz"
@@ -91,6 +92,7 @@
     },
     {
       "name": "Ancestry deconvolution",
+      "description": "Diploid ancestry calls are a consensus of calls that agree in >= 3 of 4 methods (LAMP-LD, HAPMIX, RFMIX and MULTIMIX)      <br/>      <br/>      Dipoid ancestry tract code:      <br/>      0 = unknown (a tie, 3-way or 4-way disagreement across methods)      <br/>      1 = European:European      <br/>      2 = European:African      <br/>      3 = African:African      <br/>      4 = European:Native American      <br/>      5 = African:Native American      <br/>      6 = Native American:Native American      <br/>      undet = base pairs between the SNP at the end of one tract and the first SNP at the beginning of the next tract. Regions at the start and end of each chromosome flanking the first and last SNPs used in the calling are also listed as 'undet'.",
       "maximum_resolution": 0,
       "files": {
         "*": "<set>/<sample>.bed.gz"
