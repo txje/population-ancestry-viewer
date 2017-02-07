@@ -15,16 +15,22 @@ The viewer displays arbitrary collinear genomically-anchored datasets. By collin
 I mean the data must be annotated on the same version of the same reference genome.
 
 This tool was originally developed to support the analysis of classical laboratory
-mice (http://msub.csbio.unc.edu) and the Collaborative Cross (http://csbio.unc.edu/ccv).
-These deployments integrate several datasets, including generic mouse annotation,
-genotypes, ancestry, and phylogenetic trees.
+mice (http://msub.csbio.unc.edu) and the Collaborative Cross
+(http://csbio.unc.edu/ccv). These deployments integrate several datasets, including
+generic mouse annotation, genotypes, ancestry, and phylogenetic trees.
 
 This generic version currently supports arbitrary VCF and BED annotations. It is
 designed to be as light-weight as possible on the server, while fetching requested
 data with relative efficiency. The server consists of a python CGI script that uses
-tabix to fetch the requested subset of data. A compatible python and tabix installation
-are the only requirements - the data need not be preprocessed other than to index the
-input VCF and BED files using tabix.
+tabix to fetch the requested subset of data. A compatible python and tabix
+installation are the only server-side requirements - the data need not be
+preprocessed other than to index the input VCF and BED files using tabix.
+
+Client-side resources not acquired via CDN and not included in this repo include:
+  * https://github.com/harvesthq/chosen
+    Version 1.6.2 is known to work and should be downloaded and put in the /incl directory
+
+jQuery and Bootstrap are also used and recent versions are fetched from CDN.
 
 A metadata file (in JSON format) must be constructed for your specific deployment.
 The example deployment using the MXL population from the 1000 Genomes project uses
@@ -85,3 +91,7 @@ the metadata file below:
         }
       ]
     }
+
+
+To deploy the viewer under a real web server (say, nginx or Apache), the /services directory should be marked
+to execute CGI. And and all datasets referenced by the metadata file should live under /services/data/...

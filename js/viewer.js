@@ -133,7 +133,7 @@ function Viewer(window, size_mult, metadata) {
         var title_bar = new HorizontalPanel();
         title_bar.style.fontSize = '12pt';
         var $showhide = $('<i>');
-        $showhide.addClass('icon-chevron-up');
+        $showhide.addClass(' glyphicon-whiteicon-chevron-up');
         $showhide.css('cursor', 'pointer');
         $showhide.css('margin-left', '5px');
         var handler = function(event) {
@@ -141,13 +141,13 @@ function Viewer(window, size_mult, metadata) {
             var $button = $(this);
             if(t.style.display != 'none') {
                 t.style.display = 'none';
-                $button.addClass('icon-chevron-down');
-                $button.removeClass('icon-chevron-up');
+                $button.addClass(' glyphicon-whiteicon-chevron-down');
+                $button.removeClass(' glyphicon-whiteicon-chevron-up');
             }
             else {
                 t.style.display = 'block';
-                $button.addClass('icon-chevron-up');
-                $button.removeClass('icon-chevron-down');
+                $button.addClass(' glyphicon-whiteicon-chevron-up');
+                $button.removeClass(' glyphicon-whiteicon-chevron-down');
             }
         };
         $showhide.click({t:t}, handler);

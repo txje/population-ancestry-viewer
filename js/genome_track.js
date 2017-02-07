@@ -574,11 +574,11 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
   }
   
   // navigation here
-  this.position_info.add(this.makeButton(-0.5, 'pan', 'icon-chevron-left', 2));
-  this.position_info.add(this.makeButton(-0.2, 'pan', 'icon-chevron-left', 1));
-  this.position_info.add(this.makeButton(0.2, 'pan', 'icon-chevron-right', 1));
-  this.position_info.add(this.makeButton(0.5, 'pan', 'icon-chevron-right', 2));
-  this.position_info.add(this.makeButton(0.5, 'zoomRatio', 'icon-zoom-out', 1));
+  this.position_info.add(this.makeButton(-0.5, 'pan', 'glyphicon glyphicon-chevron-left', 2));
+  this.position_info.add(this.makeButton(-0.2, 'pan', 'glyphicon glyphicon-chevron-left', 1));
+  this.position_info.add(this.makeButton(0.2, 'pan', 'glyphicon glyphicon-chevron-right', 1));
+  this.position_info.add(this.makeButton(0.5, 'pan', 'glyphicon glyphicon-chevron-right', 2));
+  this.position_info.add(this.makeButton(0.5, 'zoomRatio', 'glyphicon glyphicon-zoom-out', 1));
   
   // Highlighting and position info, zoom and sort buttons
   this.highlight_range = document.createElement('DIV');

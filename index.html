@@ -3,9 +3,9 @@
 <title>Population Genomics Viewer</title>
 <link rel="shortcut icon" href="img/icon.png">
 <link rel="apple-touch-icon" href="img/icon.png">
-<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.min.responsive.css">
-<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.jumbotrons.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
 <link rel="stylesheet" href="incl/chosen/chosen.css">
 <style type="text/css">
 body {
@@ -14,13 +14,10 @@ body {
     background-position: 0 0px;
     padding-top: 30px;
 }
-.icon-unchecked {
-    background:url('img/unchecked.png');
-}
 </style>
-<script type='text/javascript' src='incl/jquery-1.7.1.min.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script type='text/javascript' src='incl/chosen/chosen.jquery.min.js'></script>
-<script type='text/javascript' src='incl/bootstrap/js/bootstrap.min.js'></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Viewer stuff -->
 <script type='text/javascript' src='js/util.js'></script>
@@ -232,29 +229,24 @@ function toggle_full_set(event) {
     var $checkbox = event.data.checkbox;
     var i = event.data.i;
     if(!selected_sets[i]) {
-        $checkbox.addClass('icon-check');
-        $checkbox.removeClass('icon-unchecked');
+        $checkbox.removeClass('glyphicon-unchecked');
+        $checkbox.addClass('glyphicon-check');
         
-        // we need to manually disable the chzn selector
-        var $s = $selector.children('.chzn-container');
-        $s.css('display', 'none');
-        var $hider = $('<div>');
-        $hider.css('width', $s.css('width'));
-        $hider.css('height', $s.css('height'));
-        $hider.addClass('chosen_hider');
-        $hider.text('All selected');
-        $selector.append($hider);
+        // disable the chzn selector
+        $selector.attr('data-placeholder', 'ALL SELECTED');
+        $selector.attr('disabled', true);
+        $selector.trigger("chosen:updated");
         
         selected_sets[i] = true;
     }
     else {
-        $checkbox.removeClass('icon-check');
-        $checkbox.addClass('icon-unchecked');
+        $checkbox.removeClass('glyphicon-check');
+        $checkbox.addClass('glyphicon-unchecked');
         
-        // we need to manually disable the chzn selector
-        var $s = $selector.children('.chzn-container');
-        $s.css('display', 'block');
-        $selector.children('.chosen_hider').remove();
+        // enable the chzn selector
+        $selector.attr('data-placeholder', 'Choose samples');
+        $selector.attr('disabled', false);
+        $selector.trigger("chosen:updated");
         
         selected_sets[i] = false;
     }
@@ -328,7 +320,7 @@ function addSets(sets) {
         $div.append($('<br>'));
         
         $control = $('<div>');
-        $control.addClass('controls');
+        $control.addClass('input-group');
         // select
         $select = $('<select>');
         $select.addClass('chzn-select');
@@ -342,20 +334,20 @@ function addSets(sets) {
             $option.attr('value', sets[set_name][j]);
             $select.append($option);
         }
-        $control.append($select);
         
         $label = $('<label>');
-        $label.addClass('control-label');
-        $label.attr('for', set_name + '_strains');
+        $label.addClass('input-group-addon');
+        //$label.attr('for', set_name + '_strains');
         $label.append(set_name + ' ');
         // pick all button
         $all = $('<i>');
-        $all.addClass('icon-unchecked');
+        $all.addClass('glyphicon glyphicon-unchecked');
         $all.css('cursor', 'pointer');
-        $all.click({selector: $control, checkbox: $all, i: i}, toggle_full_set);
+        $all.click({selector: $select, checkbox: $all, i: i}, toggle_full_set);
         $label.append($all);
         
-        $div.append($label);
+        $control.append($label);
+        $control.append($select);
         $div.append($control);
     }
 }
@@ -366,7 +358,7 @@ function addSets(sets) {
   
     <div class="container">
 
-      <header class='jumbotron subhead'>
+      <header class='page-header'>
         <div style="display:table; width:100%">
         <div style="display:table-row">
             <div style='display:table-cell; text-align:left'>
@@ -381,15 +373,12 @@ function addSets(sets) {
           <ul class='nav nav-tabs'>
             <li><a href="#description">Description</a></li>
             <li><a href="#viewer">Viewer</a></li>
-            <li><a href="#reference">Reference</a></li>
           </ul>
         </div>
       </header>
       
       <div class="well" style='margin-top:40px'>
       <section id='description'>
-        <h1>Description</h1>
-        <br/>
         <p>
           The Population Genomics Viewer (PGV) is a custom genome browser designed to provide the user with reliable and detailed answers to questions on the haplotype diversity and phylogenetic origin of the genetic variation underlying any genomic region.
           <br/>
@@ -397,19 +386,15 @@ function addSets(sets) {
           PGV allows the user to select a region of the genome and a set of samples.  The region is selected by specifying the start (e.g. 31200000 or 31200K or 31.2M), and end of the interval and the chromosome (i.e, autosome number and X chromosome).  Samples can be selected by name or by entire set.
           <br/>
           <br/>
-          <h3>Data sets</h3>
-          <br/>
-          <h4>SNPs</h4> This display provides local density of SNPs. The browser provides a histogram in which the height of the bar is proportional to the local SNP density.
-          <br/>
-          <br/>
-          Further details are explained in our paper (see <a href='#reference'>reference</a>).
+          <h4>Data sets</h2>
+          <b>Name</b> -- Description...
         </p>
       </section>
       </div>
 
       <div class="well">
       <section id='viewer'>
-        <h1>Viewer</h1>
+        <h3>Viewer</h3>
         <p>
           <br/>
           Samples and subset selection
@@ -420,33 +405,26 @@ function addSets(sets) {
 
               <legend>Filter</legend>
               
-              <div class="control-group">
-                <label class='control-label' for="chrom">Chromosome</label>
-                <div class='controls'>
-                  <select class="medium" name="chrom" id="chrom">
+              <div class="input-group">
+                <label class='input-group-addon' for="chrom">Chromosome</label>
+                  <select class="form-control" name="chrom" id="chrom">
                   </select>
-                </div>
               </div>
               
-              <div class="control-group">
-                <label class='control-label' for="start_pos">Start</label>
-                <div class="controls">
-                  <input class="input-medium" id="start_pos" name="start_pos" type="text"/>
-                </div>
+              <div class="input-group">
+                <label class='input-group-addon' for="start_pos">Start</label>
+                <input class="form-control" id="start_pos" name="start_pos" type="text"/>
               </div>
               
-              <div class="control-group">
-                <label class="control-label" for="end_pos">End</label>
-                <div class="controls">
-                  <input class="input-medium" id="end_pos" name="end_pos" type="text"/>
-                  <p class="help-block">3000000 = 3,000,000 = 3m = 3M = 3000k = 3KK</p>
-                </div>
+              <div class="input-group">
+                <label class="input-group-addon" for="end_pos">End</label>
+                <input class="form-control" id="end_pos" name="end_pos" type="text"/>
               </div>
               
-              <div class="control-group" id='strain_sets'>
+              <div class="input-group" id='strain_sets'>
               </div>
 
-              <div class="control-group">
+              <div class="input-group">
                 <div class="controls">
                   <p class="help-block">
                     Type a sample name to search. Multiple samples can be selected.
@@ -458,7 +436,7 @@ function addSets(sets) {
                     <strong>Uh oh.</strong> Fix the highlighted fields and try again.
                   </p>
                   <br/>
-                  <a onclick='update()' class='btn btn-large' id='view_filter_button'><i class="icon-refresh"></i> View filter data</a>
+                  <a onclick='update()' class='btn btn-default' id='view_filter_button'><i class="glyphicon glyphicon-refresh"></i> View filter data</a>
                 </div>
               </div>
               
@@ -467,16 +445,16 @@ function addSets(sets) {
               <div class="control-group">
                 <label class="control-label" for="end_pos">Navigation</label>
                 <div class='controls'>
-                  <a onclick='zoom(0.1)' class='btn btn-large'><i class='icon-zoom-out'></i> 10x</a>
-                  <a onclick='zoom(0.5)' class='btn btn-large'><i class='icon-zoom-out'></i> 2x</a>
-                  <a onclick='zoom(2)' class='btn btn-large'><i class='icon-zoom-in'></i> 2x</a>
-                  <a onclick='zoom(10)' class='btn btn-large'><i class='icon-zoom-in'></i> 10x</a>
+                  <a onclick='zoom(0.1)' class='btn btn-default'><i class='glyphicon glyphicon-zoom-out'></i> 10x</a>
+                  <a onclick='zoom(0.5)' class='btn btn-default'><i class='glyphicon glyphicon-zoom-out'></i> 2x</a>
+                  <a onclick='zoom(2)' class='btn btn-default'><i class='glyphicon glyphicon-zoom-in'></i> 2x</a>
+                  <a onclick='zoom(10)' class='btn btn-default'><i class='glyphicon glyphicon-zoom-in'></i> 10x</a>
                   <br/>
                   <br/>
-                  <a onclick='pan(-0.5)' class='btn btn-large'><i class='icon-chevron-left'></i><i class='icon-chevron-left'></i></a>
-                  <a onclick='pan(-0.2)' class='btn btn-large'><i class='icon-chevron-left'></i></a>
-                  <a onclick='pan(0.2)' class='btn btn-large'><i class='icon-chevron-right'></i></a>
-                  <a onclick='pan(0.5)' class='btn btn-large'><i class='icon-chevron-right'></i><i class='icon-chevron-right'></i></a>
+                  <a onclick='pan(-0.5)' class='btn btn-default'><i class='glyphicon glyphicon-chevron-left'></i><i class='glyphicon glyphicon-chevron-left'></i></a>
+                  <a onclick='pan(-0.2)' class='btn btn-default'><i class='glyphicon glyphicon-chevron-left'></i></a>
+                  <a onclick='pan(0.2)' class='btn btn-default'><i class='glyphicon glyphicon-chevron-right'></i></a>
+                  <a onclick='pan(0.5)' class='btn btn-default'><i class='glyphicon glyphicon-chevron-right'></i><i class='glyphicon glyphicon-chevron-right'></i></a>
                 </div>
                 <div class='controls'>
                   <p class="help-block">

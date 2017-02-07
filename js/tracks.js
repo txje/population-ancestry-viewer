@@ -32,7 +32,7 @@ function ColorTrack() {
     this.flow.add(this.track.element);
     
     if(this.downloadable) {
-      this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'icon-download icon-white');
+      this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
       this.flow.add(this.button.element);
     }
   }
@@ -135,6 +135,11 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
      * send usable color block data to the track
      * --------------------------------------------------*/
 
+    if(data[metadata.name] == null) {
+      // probably window is too large
+      this.track.highlight_range.textContent = "Maximum viewable window for this dataset is " + metadata["maximum_resolution"];
+      return;
+    }
     var header_row = data[metadata.name]['*'][0]; // we have to get the sample names from the header, since all the ones we asked for may not have been found
     for(var i = 9; i < header_row.length; i++) {
       var s = header_row[i];
