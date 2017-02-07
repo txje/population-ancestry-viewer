@@ -1,0 +1,150 @@
+{
+  "description": "1000 genomes Phase 1 MXL population chromosomes 21 and 22.<br/>Coordinates are on NCBI36/hg18.<br/><br/><i>An integrated map of genetic variation from 1092 human genomes</i>. Nature 491, 56–65 (01 November 2012) doi:10.1038/nature11632",
+
+  "samples": [
+    {"name": "NA19648", "set": "MXL"},
+    {"name": "NA19660", "set": "MXL"},
+    {"name": "NA19676", "set": "MXL"},
+    {"name": "NA19685", "set": "MXL"},
+    {"name": "NA19723", "set": "MXL"},
+    {"name": "NA19732", "set": "MXL"},
+    {"name": "NA19741", "set": "MXL"},
+    {"name": "NA19753", "set": "MXL"},
+    {"name": "NA19762", "set": "MXL"},
+    {"name": "NA19776", "set": "MXL"},
+    {"name": "NA19785", "set": "MXL"},
+    {"name": "NA19651", "set": "MXL"},
+    {"name": "NA19661", "set": "MXL"},
+    {"name": "NA19678", "set": "MXL"},
+    {"name": "NA19716", "set": "MXL"},
+    {"name": "NA19725", "set": "MXL"},
+    {"name": "NA19734", "set": "MXL"},
+    {"name": "NA19746", "set": "MXL"},
+    {"name": "NA19755", "set": "MXL"},
+    {"name": "NA19764", "set": "MXL"},
+    {"name": "NA19777", "set": "MXL"},
+    {"name": "NA19786", "set": "MXL"},
+    {"name": "NA19652", "set": "MXL"},
+    {"name": "NA19663", "set": "MXL"},
+    {"name": "NA19679", "set": "MXL"},
+    {"name": "NA19717", "set": "MXL"},
+    {"name": "NA19726", "set": "MXL"},
+    {"name": "NA19735", "set": "MXL"},
+    {"name": "NA19747", "set": "MXL"},
+    {"name": "NA19756", "set": "MXL"},
+    {"name": "NA19770", "set": "MXL"},
+    {"name": "NA19779", "set": "MXL"},
+    {"name": "NA19788", "set": "MXL"},
+    {"name": "NA19654", "set": "MXL"},
+    {"name": "NA19664", "set": "MXL"},
+    {"name": "NA19681", "set": "MXL"},
+    {"name": "NA19719", "set": "MXL"},
+    {"name": "NA19728", "set": "MXL"},
+    {"name": "NA19737", "set": "MXL"},
+    {"name": "NA19749", "set": "MXL"},
+    {"name": "NA19758", "set": "MXL"},
+    {"name": "NA19771", "set": "MXL"},
+    {"name": "NA19780", "set": "MXL"},
+    {"name": "NA19789", "set": "MXL"},
+    {"name": "NA19655", "set": "MXL"},
+    {"name": "NA19672", "set": "MXL"},
+    {"name": "NA19682", "set": "MXL"},
+    {"name": "NA19720", "set": "MXL"},
+    {"name": "NA19729", "set": "MXL"},
+    {"name": "NA19738", "set": "MXL"},
+    {"name": "NA19750", "set": "MXL"},
+    {"name": "NA19759", "set": "MXL"},
+    {"name": "NA19773", "set": "MXL"},
+    {"name": "NA19782", "set": "MXL"},
+    {"name": "NA19794", "set": "MXL"},
+    {"name": "NA19657", "set": "MXL"},
+    {"name": "NA19675", "set": "MXL"},
+    {"name": "NA19684", "set": "MXL"},
+    {"name": "NA19722", "set": "MXL"},
+    {"name": "NA19731", "set": "MXL"},
+    {"name": "NA19740", "set": "MXL"},
+    {"name": "NA19752", "set": "MXL"},
+    {"name": "NA19761", "set": "MXL"},
+    {"name": "NA19774", "set": "MXL"},
+    {"name": "NA19783", "set": "MXL"},
+    {"name": "NA19795", "set": "MXL"}
+   ],
+
+  "chromosomes": [
+    {"name": "21", "length": 46944323, "display": "21 (47 Mbp)"},
+    {"name": "22", "length": 49691432, "display": "22 (50 Mbp)"}
+  ],
+
+  "tracks": [
+    {
+      "name": "Consensus SNPs",
+      "maximum_resolution": 1000000,
+      "files": {
+        "*": "All.chr<chrom>.LC1094_UNION_GL.20101123.snp.low_coverage.genotypes.vcf.gz"
+      },
+      "colors": {
+        "REF": [200,200,200,1],
+        "HET": [200,100,0,1],
+        "ALT": [200,0,0,1]
+      },
+      "type": "vcf"
+    },
+    {
+      "name": "Phased haplotypes",
+      "maximum_resolution": 1000000,
+      "files": {
+        "*": "ALL.chr<chrom>.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz"
+      },
+      "colors": {
+        "REF": [200,200,200,1],
+        "HET": [200,100,0,1],
+        "ALT": [200,0,0,1]
+      },
+      "type": "vcf"
+    },
+    {
+      "name": "Integrated variants",
+      "maximum_resolution": 1000000,
+      "files": {
+        "*": "ALL.chr<chrom>.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz"
+      },
+      "colors": {
+        "REF": [200,200,200,1],
+        "HET": [200,100,0,1],
+        "ALT": [200,0,0,1]
+      },
+      "type": "vcf"
+    },
+    {
+      "name": "Structural variants",
+      "maximum_resolution": 10000000,
+      "files": {
+        "*": "ALL.wgs.BI_genome_strip_hq.20101123.dels.low_coverage.genotypes.vcf.gz"
+      },
+      "colors": {
+        "REF": [200,200,200,1],
+        "HET": [200,100,0,1],
+        "ALT": [200,0,0,1]
+      },
+      "type": "vcf"
+    },
+    {
+      "name": "Ancestry deconvolution",
+      "maximum_resolution": 0,
+      "files": {
+        "*": "<set>/<sample>.bed.gz"
+      },
+      "colors": {
+        "undet": [200,200,200,1],
+        "0": [0,0,0,1],
+        "1": [200,0,0,1],
+        "2": [0,200,0,1],
+        "3": [0,0,200,1],
+        "4": [200,200,0,1],
+        "5": [200,0,200,1],
+        "6": [0,200,200,1]
+      },
+      "type": "bed"
+    }
+  ]
+}

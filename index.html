@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<head>
+<title>Population Genomics Viewer</title>
+<link rel="shortcut icon" href="img/icon.png">
+<link rel="apple-touch-icon" href="img/icon.png">
+<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.min.responsive.css">
+<link rel="stylesheet" href="incl/bootstrap/css/bootstrap.jumbotrons.css">
+<link rel="stylesheet" href="incl/chosen/chosen.css">
+<style type="text/css">
+body {
+    background-image: url(img/dna_background.png);
+    background-repeat: repeat-x;
+    background-position: 0 0px;
+    padding-top: 30px;
+}
+.icon-unchecked {
+    background:url('img/unchecked.png');
+}
+</style>
+<script type='text/javascript' src='incl/jquery-1.7.1.min.js'></script>
+<script type='text/javascript' src='incl/chosen/chosen.jquery.min.js'></script>
+<script type='text/javascript' src='incl/bootstrap/js/bootstrap.min.js'></script>
+
+<!-- Viewer stuff -->
+<script type='text/javascript' src='js/util.js'></script>
+<script type='text/javascript' src='js/genome_track.js'></script>
+<script type='text/javascript' src='js/data_row.js'></script>
+<script type='text/javascript' src='js/horizontal_panel.js'></script>
+<script type='text/javascript' src='js/vertical_panel.js'></script>
+<script type='text/javascript' src='js/absolute_panel.js'></script>
+<script type='text/javascript' src='js/text_draw_panel.js'></script>
+<script type='text/javascript' src='js/tree_panel.js'></script>
+<script type='text/javascript' src='js/button.js'></script>
+<script type='text/javascript' src='js/remote.js'></script>
+<script type='text/javascript' src='js/tracks.js'></script>
+<script type='text/javascript' src='js/viewer.js'></script> <!-- this has to be last because it requires everything else -->
+
+<!-- arbor.js tree drawing -->
+<script src="incl/arbor-v0.92/lib/arbor_IE_support2.js"></script>
+<script src="js/arbor_trees.js"></script>
+
+<script type='text/javascript'>
+// state of the updating display
+var show_updating;
+var show_downloading;
+var update_angle;
+
+// compute location of ctrl point for arc drawing
+var pt0 = (1,0);
+var pt1 = (Math.cos(Math.PI*0.8), Math.sin(Math.PI*0.8));
+var between = ((pt0[0]+pt1[0]) / 2, (pt0[1]+pt1[1]) / 2);
+var ctrl_pt_dist = Math.sqrt(Math.pow(between[0], 2) + Math.pow(between[1], 2)) * 2;
+
+// global start and end pos to display
+var display_pos;
+
+var viewer;
+var metadata;
+
+// url of the filtered file to download
+var file;
+
+function update() {
+    var params = getParams();
+    if(!params)
+        return;
+    viewer.update(params[0], params[1], params[2], params[3]);
+}
+
+// amt is a multiplier 
+function zoom(amt) {
+    viewer.zoomRatio(amt);
+}
+
+// amt is represented as a fraction of the visible field and is positive or negative indicating direction 
+function pan(amt) {
+    viewer.pan(amt);
+}
+
+/* -------------------------------------------------------
+   Params
+   -------------------------------------------------------
+*/
+
+function parsePos(num) {
+    num = num.replace(',', '');
+    var multiplier = 1;
+    if(num.indexOf('M') != -1)
+        multiplier *= 1000000 * (num.split('M').length - 1);
+    if(num.indexOf('m') != -1)
+        multiplier *= 1000000 * (num.split('m').length - 1);
+    if(num.indexOf('K') != -1)
+        multiplier *= 1000 * (num.split('K').length - 1);
+    if(num.indexOf('k') != -1)
+        multiplier *= 1000 * (num.split('k').length - 1);
+    num = num.replace('k', '').replace('m', '').replace('K', '').replace('M', '');
+    num = parseFloat(num);
+    num *= multiplier;
+    return Math.floor(num);
+}
+
+function getStrains() {
+    var selects = $('.chzn-select');
+    var strains = [];
+    for(var a in selects) {
+        var sel = selects[a];
+        if(sel.childNodes) {
+            for(var i = 0; i < sel.childNodes.length; i++) {
+                if(sel.childNodes[i].selected || selected_sets[a]) { // if selected, or whole set selected
+                    strains.push(sel.childNodes[i].value); //.replace('/', '_')
+                }
+            }
+        }
+    }
+    if(strains.length == 0) { // no strains selected
+        $('.chzn-select').parent().parent().addClass('error');
+    }
+    else {
+        $('.chzn-select').parent().parent().removeClass('error');
+    }
+    
+    if(strains.length > 0)
+        return strains;
+    return null;
+}
+
+function getStartEnd() {
+    var start = parsePos(document.getElementById('start_pos').value);
+    var end = parsePos(document.getElementById('end_pos').value);
+    
+    if(isNaN(start)) {
+        $('#start_pos').addClass('error');
+        $('#start_pos').parent().parent().addClass('error');
+    }
+    else {
+        $('#start_pos').removeClass('error');
+        $('#start_pos').parent().parent().removeClass('error');
+    }
+    if(isNaN(end)) {
+        $('#end_pos').addClass('error');
+        $('#end_pos').parent().parent().addClass('error');
+    }
+    else {
+        $('#end_pos').removeClass('error');
+        $('#end_pos').parent().parent().removeClass('error');
+    }
+    if(!isNaN(start) && !isNaN(end)) {
+        console.log(start + ' - ' + end);
+        return [start, end];
+    }
+    return null;
+}
+
+function getChrom() {
+    var chrom = document.getElementById('chrom').value;
+    return chrom;
+}
+
+function getParams() {
+    var range = getStartEnd();
+    var strains = getStrains();
+    var chrom = getChrom();
+    if (!(range && strains && chrom)) {
+        $('#error_box').show();
+        return null;
+    }
+    else {
+        $('#error_box').hide();
+        return [chrom, range[0], range[1], strains];
+    }
+}
+
+
+/* -------------------------------------------------------
+   Updating
+   -------------------------------------------------------
+*/
+
+function updating(width, height, x, y) {
+    // the updating circle is 150px diameter
+    update_angle = (update_angle + Math.PI/20) % (Math.PI*2);
+    
+    var canvas = document.getElementById('canvas');
+    var c = canvas.getContext('2d');
+    c.canvas.width  = width;
+    c.canvas.height = height;
+    var r = 75; // radius
+    // clear only the circle
+    c.clearRect(x,y,x+r*2,y+r*2);
+    
+    c.strokeStyle = "#000000";
+    c.fillStyle = "#000000";
+    c.lineWidth = 15;
+    
+    c.beginPath();
+    c.arc(x+r, y+(r+12), r, update_angle, update_angle + Math.PI*0.8, false)
+    c.stroke();
+    c.closePath();
+    
+    c.beginPath();
+    c.moveTo(x+r + Math.cos(update_angle + Math.PI*0.8) * (r+12), y+(r+12) + Math.sin(update_angle + Math.PI*0.8) * (r+12));
+    c.lineTo(x+r + Math.cos(update_angle + Math.PI*0.8) * (r-12), y+(r+12) + Math.sin(update_angle + Math.PI*0.8) * (r-12));
+    c.lineTo(x+r + Math.cos(update_angle + Math.PI*0.8+0.2) * r, y+(r+12) + Math.sin(update_angle + Math.PI*0.8+0.2) * r);
+    c.fill();
+    c.closePath()
+    
+    c.beginPath();
+    c.arc(x+r, y+(r+12), r, update_angle + Math.PI, update_angle + Math.PI*1.8, false)
+    c.stroke();
+    c.closePath();
+    
+    c.beginPath();
+    c.moveTo(x+r + Math.cos(update_angle + Math.PI*1.8) * (r+12), y+(r+12) + Math.sin(update_angle + Math.PI*1.8) * (r+12));
+    c.lineTo(x+r + Math.cos(update_angle + Math.PI*1.8) * (r-12), y+(r+12) + Math.sin(update_angle + Math.PI*1.8) * (r-12));
+    c.lineTo(x+r + Math.cos(update_angle + Math.PI*1.8+0.2) * r, y+(r+12) + Math.sin(update_angle + Math.PI*1.8+0.2) * r);
+    c.fill();
+    c.closePath()
+
+    c.font = '50px sans-serif';
+    c.textBaseline = 'top';
+    c.fillText('Updating...', x-20, y+r*2+12);
+}
+
+/* -------------------------------------------------------
+   Whole genome
+   -------------------------------------------------------
+*/
+
+function toggle_full_set(event) {
+    var $selector = event.data.selector;
+    var $checkbox = event.data.checkbox;
+    var i = event.data.i;
+    if(!selected_sets[i]) {
+        $checkbox.addClass('icon-check');
+        $checkbox.removeClass('icon-unchecked');
+        
+        // we need to manually disable the chzn selector
+        var $s = $selector.children('.chzn-container');
+        $s.css('display', 'none');
+        var $hider = $('<div>');
+        $hider.css('width', $s.css('width'));
+        $hider.css('height', $s.css('height'));
+        $hider.addClass('chosen_hider');
+        $hider.text('All selected');
+        $selector.append($hider);
+        
+        selected_sets[i] = true;
+    }
+    else {
+        $checkbox.removeClass('icon-check');
+        $checkbox.addClass('icon-unchecked');
+        
+        // we need to manually disable the chzn selector
+        var $s = $selector.children('.chzn-container');
+        $s.css('display', 'block');
+        $selector.children('.chosen_hider').remove();
+        
+        selected_sets[i] = false;
+    }
+}
+
+// from twitter.github.com/bootstrap/appliation.js (bootstrap doc specific code)
+// fix sub nav on scroll
+!function ($) {
+  $(function(){
+    var $win = $(window)
+    var $nav = $('.subnav')
+    var navTop = $('.subnav').length && $('.subnav').offset().top - 40
+    var isFixed = 0
+
+    processScroll()
+
+    $win.on('scroll', processScroll)
+
+    function processScroll() {
+      var i, scrollTop = $win.scrollTop()
+      if (scrollTop >= navTop && !isFixed) {
+        isFixed = 1
+        $nav.addClass('subnav-fixed')
+      }
+      else if (scrollTop <= navTop && isFixed) {
+        isFixed = 0
+        $nav.removeClass('subnav-fixed')
+      }
+    }
+  })
+}(window.jQuery)
+
+/* -------------------------------------------------------
+   setup
+   -------------------------------------------------------
+*/
+function setup() {
+    $.getJSON("meta.json", function(data) {
+        metadata = data;
+        viewer = new Viewer(document, 1, metadata);
+        document.getElementById('tracks').appendChild(viewer.element);
+        addSets(viewer.sets);
+        addChroms(viewer.chroms);
+        $(".chzn-select").chosen();
+    });
+}
+
+function addChroms(chroms) {
+    $select = $('#chrom');
+    for(var chrom in chroms) {
+        $option = $('<option>' + chroms[chrom].display + '</option>');
+        $option.attr('value', chrom);
+        $select.append($option);
+    }
+    dispBounds(0, chroms[$('#chrom').val()].length);
+}
+
+function dispBounds(st, en) {
+  $('#start_pos').val(st);
+  $('#end_pos').val(en);
+}
+
+var selected_sets;
+
+function addSets(sets) {
+    $div = $('#strain_sets');
+    selected_sets = [];
+    for(var set_name in sets) {
+        selected_sets.push(false);
+        $div.append($('<br>'));
+        
+        $control = $('<div>');
+        $control.addClass('controls');
+        // select
+        $select = $('<select>');
+        $select.addClass('chzn-select');
+        $select.attr('multiple', 'true');
+        $select.attr('name', 'strains');
+        $select.attr('id', set_name + '_strains');
+        $select.attr('data-placeholder', 'Choose samples');
+        $select.css('width', '500px');
+        for(var j = 0; j < sets[set_name].length; j++) {
+            $option = $('<option>' + sets[set_name][j] + '</option>');
+            $option.attr('value', sets[set_name][j]);
+            $select.append($option);
+        }
+        $control.append($select);
+        
+        $label = $('<label>');
+        $label.addClass('control-label');
+        $label.attr('for', set_name + '_strains');
+        $label.append(set_name + ' ');
+        // pick all button
+        $all = $('<i>');
+        $all.addClass('icon-unchecked');
+        $all.css('cursor', 'pointer');
+        $all.click({selector: $control, checkbox: $all, i: i}, toggle_full_set);
+        $label.append($all);
+        
+        $div.append($label);
+        $div.append($control);
+    }
+}
+
+</script>
+</head>
+<body onload='setup()'>
+  
+    <div class="container">
+
+      <header class='jumbotron subhead'>
+        <div style="display:table; width:100%">
+        <div style="display:table-row">
+            <div style='display:table-cell; text-align:left'>
+                <h1>Population Genomics Viewer</h1>
+            </div>
+        </div> <!-- /table-row -->
+        </div> <!-- /table -->
+        <p class='lead'>
+          Comparative genome browser
+        </p>
+        <div class='subnav' id='subnav'>
+          <ul class='nav nav-tabs'>
+            <li><a href="#description">Description</a></li>
+            <li><a href="#viewer">Viewer</a></li>
+            <li><a href="#reference">Reference</a></li>
+          </ul>
+        </div>
+      </header>
+      
+      <div class="well" style='margin-top:40px'>
+      <section id='description'>
+        <h1>Description</h1>
+        <br/>
+        <p>
+          The Population Genomics Viewer (PGV) is a custom genome browser designed to provide the user with reliable and detailed answers to questions on the haplotype diversity and phylogenetic origin of the genetic variation underlying any genomic region.
+          <br/>
+          <br/> 
+          PGV allows the user to select a region of the genome and a set of samples.  The region is selected by specifying the start (e.g. 31200000 or 31200K or 31.2M), and end of the interval and the chromosome (i.e, autosome number and X chromosome).  Samples can be selected by name or by entire set.
+          <br/>
+          <br/>
+          <h3>Data sets</h3>
+          <br/>
+          <h4>SNPs</h4> This display provides local density of SNPs. The browser provides a histogram in which the height of the bar is proportional to the local SNP density.
+          <br/>
+          <br/>
+          Further details are explained in our paper (see <a href='#reference'>reference</a>).
+        </p>
+      </section>
+      </div>
+
+      <div class="well">
+      <section id='viewer'>
+        <h1>Viewer</h1>
+        <p>
+          <br/>
+          Samples and subset selection
+          <br/>
+          <br/>
+          <form class='form-horizontal' action='dump.zip' method='POST' id='download_form'>
+            <fieldset>
+
+              <legend>Filter</legend>
+              
+              <div class="control-group">
+                <label class='control-label' for="chrom">Chromosome</label>
+                <div class='controls'>
+                  <select class="medium" name="chrom" id="chrom">
+                  </select>
+                </div>
+              </div>
+              
+              <div class="control-group">
+                <label class='control-label' for="start_pos">Start</label>
+                <div class="controls">
+                  <input class="input-medium" id="start_pos" name="start_pos" type="text"/>
+                </div>
+              </div>
+              
+              <div class="control-group">
+                <label class="control-label" for="end_pos">End</label>
+                <div class="controls">
+                  <input class="input-medium" id="end_pos" name="end_pos" type="text"/>
+                  <p class="help-block">3000000 = 3,000,000 = 3m = 3M = 3000k = 3KK</p>
+                </div>
+              </div>
+              
+              <div class="control-group" id='strain_sets'>
+              </div>
+
+              <div class="control-group">
+                <div class="controls">
+                  <p class="help-block">
+                    Type a sample name to search. Multiple samples can be selected.
+                    <br/>
+                    Click the box next to the set name to select all.
+                  </p>
+                  <br/>
+                  <p class="alert alert-error" id='error_box' style='width:400px; display:none;'>
+                    <strong>Uh oh.</strong> Fix the highlighted fields and try again.
+                  </p>
+                  <br/>
+                  <a onclick='update()' class='btn btn-large' id='view_filter_button'><i class="icon-refresh"></i> View filter data</a>
+                </div>
+              </div>
+              
+              <br/>
+              
+              <div class="control-group">
+                <label class="control-label" for="end_pos">Navigation</label>
+                <div class='controls'>
+                  <a onclick='zoom(0.1)' class='btn btn-large'><i class='icon-zoom-out'></i> 10x</a>
+                  <a onclick='zoom(0.5)' class='btn btn-large'><i class='icon-zoom-out'></i> 2x</a>
+                  <a onclick='zoom(2)' class='btn btn-large'><i class='icon-zoom-in'></i> 2x</a>
+                  <a onclick='zoom(10)' class='btn btn-large'><i class='icon-zoom-in'></i> 10x</a>
+                  <br/>
+                  <br/>
+                  <a onclick='pan(-0.5)' class='btn btn-large'><i class='icon-chevron-left'></i><i class='icon-chevron-left'></i></a>
+                  <a onclick='pan(-0.2)' class='btn btn-large'><i class='icon-chevron-left'></i></a>
+                  <a onclick='pan(0.2)' class='btn btn-large'><i class='icon-chevron-right'></i></a>
+                  <a onclick='pan(0.5)' class='btn btn-large'><i class='icon-chevron-right'></i><i class='icon-chevron-right'></i></a>
+                </div>
+                <div class='controls'>
+                  <p class="help-block">
+                    To zoom in, click and drag across a track to highlight a region, then click [Zoom]
+                  </p>
+                </div>
+              </div>
+              
+            </fieldset>
+          </form>
+          
+          <legend>Tracks</legend>
+          <div id='tracks'>
+          </div>
+          
+        </p>
+      </section>
+      </div>
+
+    </div><!-- /container -->
+
+</body>
+</html>
