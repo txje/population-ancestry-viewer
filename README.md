@@ -114,6 +114,8 @@ The following should work to install and run the demo on a \*nix platform with P
     cd services/data/
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
     unzip MXL_phase1_ancestry_deconvolution.zip
+    bgzip MXL/*.bed
+    tabix MXL/*.gz
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     tabix *.gz
