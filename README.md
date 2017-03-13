@@ -1,4 +1,4 @@
-Population Genomics Viewer
+Population Ancestry Viewer
 ==========================
 
 A flexible web-based framework for the visualization of collinear genomic features
@@ -102,8 +102,8 @@ The data for this demo version use chromsomes 21 and 22 from the MXL population 
 
 The following should work to install and run the demo on a \*nix platform with Python 2.7+, pysam, and tabix installed:
 
-    git clone https://github.com/txje/population-genomics-viewer
-    cd population-genomics-viewer
+    git clone https://github.com/txje/population-ancestry-viewer
+    cd population-ancestry-viewer
     mkdir incl
     cd incl
     wget https://github.com/harvesthq/chosen/releases/download/v1.6.2/chosen_v1.6.2.zip
@@ -130,6 +130,4 @@ to execute CGI.
 
 For more details see:
 
-JR Wang, FPM de Villena, L McMillan.
-[Comparative analysis and visualization of multiple collinear genomes](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-13-S3-S13).
-BMC bioinformatics 13 (3), S13
+JR Wang. *Population Ancestry Viewer: Ancestry visualization in admixed populations*. Submitted.
