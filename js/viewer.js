@@ -116,9 +116,9 @@ function Viewer(window, size_mult, metadata) {
     for(var t = 0; t < metadata.tracks.length; t++) {
       var track = metadata.tracks[t];
       if(track.type == "vcf")
-        this.tracks[t] = new VCF(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', false], null, track);
+        this.tracks[t] = new VCF(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', true, false], null, track);
       else if(track.type == "bed")
-        this.tracks[t] = new BED(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', false], null, track);
+        this.tracks[t] = new BED(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', true, true], null, track);
       else
         console.log("Unknown track type for track:", track);
     }

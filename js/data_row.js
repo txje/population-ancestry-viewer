@@ -208,14 +208,17 @@ function DataRow(colordata, label, chrom, textdata, color_map, size_mult) {
                 }
                 // regular
                 else {
-                    // opacity
-                    var color = color_map[block[2]]
-                    if(color.length > 3)
-                        var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
-                    else
-                        var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
-                    ctx.fillStyle = color;
-                    ctx.fillRect(block_start,top,Math.max(1, block_end-block_start),h - this.gap);
+                  // opacity
+                  var color = color_map[block[2]]
+                  if(color == null) {
+                    console.log(block[2], color_map);
+                  }
+                  if(color.length > 3)
+                    var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
+                  else
+                    var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
+                  ctx.fillStyle = color;
+                  ctx.fillRect(block_start,top,Math.max(1, block_end-block_start),h - this.gap);
                 }
             }
         }

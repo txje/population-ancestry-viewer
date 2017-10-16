@@ -26,14 +26,23 @@ function ColorTrack() {
     this.dataset = trackdata[1];
     this.tracktype = trackdata[2];
     this.downloadable = trackdata[3];
+    this.recolorable = trackdata[4];
 
     this.track = new GenomeTrack(window, this, this.tracktype, (this.tracktype=='strain'), clickhandler);
 
     this.flow.add(this.track.element);
     
     if(this.downloadable) {
-      this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
-      this.flow.add(this.button.element);
+      //this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
+      //this.flow.add(this.button.element);
+    }
+    
+    if(this.recolorable) {
+      var info = document.createTextNode("Click recolor button to reassign colors on a strain-by-strain basis greedily in the order strains are listed (may take a few seconds)");
+      this.flow.add(info);
+      
+      this.recolor_button = new Button("Recolor", attacher(this, this.recolor), 'btn-primary');
+      this.flow.add(this.recolor_button.element);
     }
   }
 
@@ -164,6 +173,74 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
 }
 
 function BED(window, parent, width, height, height2, trackdata, clickhandler, metadata) {
+
+  this.recolor = function() {
+    // in the original MPV, colors were hardcoded, but PGV uses an indexed hash (metadata.colors, which MAY NOT all be integers)
+    for(r in this.track.rows) {
+      for(b in this.track.rows[r].colordata) {
+        this.track.rows[r].colordata[b][2] = this.track.rows[r].colordata[b][2] + "_unrecolored"; // mark this color block as NOT YET CHANGED by appending to the color name (key)
+      }
+    }
+
+    // convert hash keys to a list of available colors
+    var available_colors = [];
+    for(col in metadata.colors) {
+      available_colors.push(col);
+    }
+    var n_colors = available_colors.length;
+    metadata.colors["unrecolored"] = [255,255,255,1];
+
+    var color_index = 0;
+    for(r in this.track.rows) { // for each track, top to bottom
+      var newcolor = false;
+      var indices = [];
+      for(var r2 = parseInt(r)+1; r2 < this.track.rows.length; r2++) {
+          indices.push(0);
+      }
+      for(b in this.track.rows[r].colordata) { // for each color block
+        var source_block = this.track.rows[r].colordata[b];
+        if(!(source_block[2].endsWith("_unrecolored"))) // color already assigned (from previous row)
+          continue;
+        var newcolor = true;
+        for(var r2 = parseInt(r)+1; r2 < this.track.rows.length; r2++) { // for each successive row
+          while(indices[r2-r-1] < this.track.rows[r2].colordata.length && this.track.rows[r2].colordata[indices[r2-r-1]][1] < source_block[0])
+            indices[r2-r-1] += 1;
+          var index = indices[r2-r-1];
+          while(index < this.track.rows[r2].colordata.length && this.track.rows[r2].colordata[index][0] <= source_block[1]) {
+            // overlapping
+            var match_block = this.track.rows[r2].colordata[index];
+            if(match_block.length == 3 && match_block[2] == source_block[2]) {
+              // deal with partial overlap
+              if(match_block[0] < source_block[0]) { // hang over left side
+                this.track.rows[r2].colordata.splice(index, 0, [match_block[0], source_block[0]-1, match_block[2]]);
+                index += 1;
+                this.track.rows[r2].colordata[index][0] = source_block[0];
+              }
+              if(match_block[1] > source_block[1]) { // hang over right side
+                this.track.rows[r2].colordata.splice(index+1, 0, [source_block[1]+1, match_block[1], match_block[2]]);
+                this.track.rows[r2].colordata[index][1] = source_block[1];
+              }
+              if(color_index < n_colors) {
+                this.track.rows[r2].colordata[index][2] = available_colors[color_index];
+              } else {
+                this.track.rows[r2].colordata[index][2] = "unrecolored";
+              }
+            }
+            index += 1;
+          }
+        }
+        if(color_index < n_colors) {
+          this.track.rows[r].colordata[b][2] = available_colors[color_index];
+        } else {
+          this.track.rows[r].colordata[b][2] = "unrecolored";
+        }
+      }
+      if(newcolor)
+        color_index += 1;
+    }
+    // update tracks
+    this.track.update(this.start, this.end, this.width, this.height, 0, 2, 100)
+  }
 
   // basically uses the super() constructor
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
