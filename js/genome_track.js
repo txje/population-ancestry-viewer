@@ -395,7 +395,7 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
     var vert = 0; // just add up heights until we get there
     while(vert < y) {
       if(this.rows[index].colordata != null)
-        vert += this.rows[index].height + this.rows[index].gap;
+        vert += this.rows[index].height;
       index += 1
     }
     return index - 1;
