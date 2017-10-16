@@ -107,20 +107,23 @@ The following should work to install and run the demo on a \*nix platform with P
     mkdir incl
     cd incl
     wget https://github.com/harvesthq/chosen/releases/download/v1.6.2/chosen_v1.6.2.zip
-    unzip chosen_v1.6.2.zip
-    mv chosen_v1.6.2 chosen
+    unzip chosen_v1.6.2.zip -d chosen
     cd ..
     mkdir services/data
     cd services/data/
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
     unzip MXL_phase1_ancestry_deconvolution.zip
-    bgzip MXL/*.bed
+    cd MXL
+    for f in $(ls); do if [ ${f:(-4)} == ".bed" ]; then bgzip $f; fi; done
+    cd ..
     tabix MXL/*.gz
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     tabix *.gz
     cd ../..
     python PythonCGIServer.py 80
+
+Your input VCF or BED files must be sorted by CHROM/POS - otherwise tabix will fail, saying something like 'the file out of order at line N'
 
 Then visit http://localhost
 
