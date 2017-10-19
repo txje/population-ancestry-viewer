@@ -320,11 +320,11 @@ function dispBounds(st, en) {
   $('#end_pos').val(en);
 }
 
-var selected_sets;
+var selected_sets = [];
 
 function addSets(sets) {
     $div = $('#strain_sets');
-    selected_sets = [];
+    var i = 0; // set index
     for(var set_name in sets) {
         selected_sets.push(false);
         $div.append($('<br>'));
@@ -359,6 +359,7 @@ function addSets(sets) {
         $control.append($label);
         $control.append($select);
         $div.append($control);
+        i++; // set index
     }
 }
 
