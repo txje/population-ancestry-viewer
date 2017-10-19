@@ -51,6 +51,7 @@ function RPC(script, handler, params) {
             }
             catch(err) {
                 handler.error('Error: ' + err);
+                console.error(response)
                 return;
             }
             handler.callback(data);
