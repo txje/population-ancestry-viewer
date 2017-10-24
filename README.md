@@ -114,12 +114,13 @@ The following should work to install and run the demo on a \*nix platform with P
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/ancestry_deconvolution/MXL_phase1_ancestry_deconvolution.zip
     unzip MXL_phase1_ancestry_deconvolution.zip
     cd MXL
-    for f in $(ls); do if [ ${f:(-4)} == ".bed" ]; then bgzip $f; fi; done
+    for f in $(ls); do if [ ${f:(-4)} == ".bed" ]; then bgzip $f && tabix $f; fi; done
     cd ..
-    tabix MXL/*.gz
+    rm MXL_phase1_ancestry_deconvolution.zip
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase1/analysis_results/integrated_call_sets/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
-    tabix *.gz
+    tabix ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
+    tabix ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.gz
     cd ../..
     python PythonCGIServer.py 80
 
