@@ -59,7 +59,7 @@ def filter_vcf(samples, chrom, start_pos, end_pos, data_dir, meta, sample_meta):
       data[s] = [row[:9] + [row[r].split(':')[gt_part] for r in sample_indices] for row in [fields]+rows]
     return data
 
-def get_tracks(samples, chrom, tracks, bounds=[None, None]):
+def get_tracks(samples, chrom, tracks, bounds=[None, None], json_fmt=True):
     if os.path.exists("services"):
       data_dir = "services/data/" # dev
     else:
@@ -80,8 +80,15 @@ def get_tracks(samples, chrom, tracks, bounds=[None, None]):
       if track_meta[t]["maximum_resolution"] <= 0 or track_meta[t]["maximum_resolution"] > (bounds[1] - bounds[0]):
         if track_meta[t]["type"] == "vcf":
           data = filter_vcf(samples, chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta)
+          if not json_fmt:
+            #out = "CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	" + "\t".join(samples) + "\n" + "\n".join(['\t'.join(d) for s in data for d in data[s]])
+            out = "\n".join(['\t'.join(d) for s in data for d in data[s]])
+            return out
         elif track_meta[t]["type"] == "bed":
           data = filter_bed(samples, chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta)
+          if not json_fmt:
+            out = "sample	start	end	name\n" + "\n".join(['\t'.join([s] + d) for s in data for d in data[s]])
+            return out
       return_tracks[t] = data
 
     return return_tracks
@@ -103,12 +110,18 @@ if __name__ == '__main__':
   chrom = form.getvalue('chrom')
   start = int(form.getvalue('start'))
   end = int(form.getvalue('end'))
+  fmt = form.getvalue('format')
   if "strain" in form:
     strains = form.getvalue('strain')
     if type(strains) != type([]):
       strains = [strains]
   else:
     strains = None
-  print "Content-type: text/json\n"
-  response = get_tracks(strains, chrom, [name], [start, end])
-  print json.dumps(response)
+  if fmt == "text":
+    print "Content-type: text/plain\n"
+    response = get_tracks(strains, chrom, [name], [start, end], json_fmt=False)
+    print response
+  else: # elif fmt == "json"
+    print "Content-type: text/json\n"
+    response = get_tracks(strains, chrom, [name], [start, end], json_fmt=True)
+    print json.dumps(response)

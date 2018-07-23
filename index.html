@@ -154,7 +154,7 @@ function getParams() {
     var range = getStartEnd();
     var strains = getStrains();
     var chrom = getChrom();
-    if (!(range && strains && chrom)) {
+    if (false && !(range && strains && chrom)) {
         $('#error_box').show();
         return null;
     }

@@ -62,3 +62,12 @@ function RPC(script, handler, params) {
     }
     AJAX(script, tmp_handler, params);
 }
+
+function remote_dump(script, callback, params) {
+    var tmp_handler = new function() {
+        this.callback = function (response) {
+            callback(response);
+        }
+    }
+    AJAX(script, tmp_handler, params);
+}

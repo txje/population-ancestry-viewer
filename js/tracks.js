@@ -33,8 +33,9 @@ function ColorTrack() {
     this.flow.add(this.track.element);
     
     if(this.downloadable) {
-      //this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
-      //this.flow.add(this.button.element);
+      console.log("making download btn");
+      this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
+      this.flow.add(this.button.element);
     }
     
     if(this.recolorable) {
@@ -55,7 +56,7 @@ function ColorTrack() {
           this.track.addRow(strains[s], chrom, metadata.colors);
       else //this.tracktype == 'single'
         this.track.addRow('Histogram', chrom, metadata.colors);
-      this.request(chrom, strains);
+      this.request(chrom, strains, "json");
     }
     else {
       this.track.update(start, end, this.width, this.height, this.height2, 2, 100);
@@ -66,8 +67,12 @@ function ColorTrack() {
     this.strains = strains;
   }
   
-  this.request = function(chrom, strains) {
-    RPC('services/service.py', this, {"chrom":chrom, "strain":strains, "data_type":this.dataset});
+  this.request = function(chrom, strains, fmt) {
+    if(fmt == "json") {
+      RPC('services/service.py', this, {"chrom":chrom, "strain":strains, "data_type":this.dataset, "format":fmt});
+    } else {
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'data_type': this.dataset, 'chrom':chrom, 'strain':strains, 'format':fmt});
+    }
   }
   
   this.callback = function(data) {
@@ -115,6 +120,16 @@ function ColorTrack() {
 
 
 function VCF(window, parent, width, height, height2, trackdata, clickhandler, metadata) {
+  this.request = function(chrom, start, end, strains, fmt) {
+    if(fmt == "json") {
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
+    } else {
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
+    }
+  }
+  this.dump = function() {
+    this.request(this.chrom, this.start, this.end, this.strains, "text");
+  }
 
   // basically uses the super() constructor
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
@@ -125,7 +140,7 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
-      this.request(chrom, start, end, strains);
+      this.request(chrom, start, end, strains, "json");
     }
     else {
       this.track.update(start, end, this.width, this.height, this.height2, 2, 100);
@@ -134,9 +149,6 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
     this.start = start;
     this.end = end;
     this.strains = strains;
-  }
-  this.request = function(chrom, start, end, strains) {
-    RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains});
   }
   this.callback = function(data) {
     /* --------------------------------------------------
@@ -241,6 +253,16 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
     // update tracks
     this.track.update(this.start, this.end, this.width, this.height, 0, 2, 100)
   }
+  this.request = function(chrom, start, end, strains, fmt) {
+    if(fmt == "json") {
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
+    } else {
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
+    }
+  }
+  this.dump = function() {
+    this.request(this.chrom, this.start, this.end, this.strains, "text");
+  }
 
   // basically uses the super() constructor
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
@@ -251,7 +273,7 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
-      this.request(chrom, start, end, strains);
+      this.request(chrom, start, end, strains, fmt="json");
     }
     else {
       this.track.update(start, end, this.width, this.height, this.height2, 2, 100);
@@ -260,9 +282,6 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
     this.start = start;
     this.end = end;
     this.strains = strains;
-  }
-  this.request = function(chrom, start, end, strains) {
-    RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains});
   }
   this.callback = function(data) {
     for(s in data[metadata.name]) {
