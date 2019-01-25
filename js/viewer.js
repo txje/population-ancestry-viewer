@@ -119,6 +119,8 @@ function Viewer(window, size_mult, metadata) {
         this.tracks[t] = new VCF(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', true, false], null, track);
       else if(track.type == "bed")
         this.tracks[t] = new BED(window, this, TRACK_WIDTH, SMALLTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'strain', true, true], null, track);
+      else if(track.type == "genes")
+       this.tracks[t] = new GENES(window, this, TRACK_WIDTH, BIGTRACK_HEIGHT, BIGTRACK_HEIGHT-SMALLTRACK_HEIGHT, [track.name, track.type, 'single', true, false], null, track);
       else
         console.log("Unknown track type for track:", track);
     }
@@ -131,7 +133,9 @@ function Viewer(window, size_mult, metadata) {
         vert.style.borderRadius = '5px';
         t = this.tracks[t];
         var title_bar = new HorizontalPanel();
+        var legend= new HorizontalPanel();
         title_bar.style.fontSize = '12pt';
+        legend.style.fontSize = '12pt';
         var $showhide = $('<i>');
         $showhide.addClass(' glyphicon-whiteicon-chevron-up');
         $showhide.css('cursor', 'pointer');
@@ -151,12 +155,15 @@ function Viewer(window, size_mult, metadata) {
             }
         };
         $showhide.click({t:t}, handler);
-        
+
         title_bar.add(document.createTextNode(t.title + ' '));
+        legend.add(document.createTextNode('See legend on top page:' + ' '));
         title_bar.add($showhide.get(0));
+        legend.add($showhide.get(0));
         vert.add(title_bar.element);
+        vert.add(legend.element);
         vert.add(t.element);
-        this.flow.add(vert.element);
+        this.flow.add(vert.element);    
     }
 
     this.chroms = {};
@@ -166,8 +173,8 @@ function Viewer(window, size_mult, metadata) {
     }
         
     this.chrom = metadata.chromosomes[0].name;
-    this.start = 20000000; //0;
-    this.end = 20090000; //this.chroms[this.chrom].length;
+    this.start = 0;
+    this.end = this.chroms[this.chrom].length;
     this.strains = [];
     this.sets = [];
     for(var s = 0; s < metadata.samples.length; s++) {
