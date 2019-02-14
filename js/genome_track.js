@@ -39,7 +39,7 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
   
   // determine if the range is outside the currently displayed resolution range
   this.outOfRange = function(start, end) {
-    if(end - start < this.min_resolution || (this.max_resolution != null && end - start > this.max_resolution) || end > this.data_max || start < this.data_min)
+    if(end - start < this.min_resolution || (this.max_resolution != null && end - start > this.max_resolution) || this.data_max == null || end > this.data_max || this.data_min == null || start < this.data_min)
       return true;
     return false;
   }
@@ -155,8 +155,9 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
     this.highlighter.style.top = $(this.canvas.element).offset().top + 'px';
     var height = 0;
     for(r in this.rows) {
-      if(this.rows[r].colordata != null)
+      if(this.rows[r].colordata != null && this.rows[r] !== undefined){
         height += this.rows[r].height + this.rows[r].gap;
+      }
     }
     this.highlighter.style.height = height + 'px';
     this.highlighter.style.height = $(this.canvas.element).height() + 'px';
@@ -182,8 +183,9 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
     this.highlighter.style.top = $(this.canvas.element).offset().top + 'px';
     var height = 0;
     for(r in this.rows) {
-      if(this.rows[r].colordata != null)
+      if(this.rows[r].colordata != null){
         height += this.rows[r].height + this.rows[r].gap;
+      }
     }
     this.highlighter.style.height = height + 'px';
     this.highlighter.style.height = $(this.canvas.element).height() + 'px';
@@ -454,8 +456,10 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
     this.rows = newrows;
     this.canvas.clear();
     for(r in this.rows) {
-      this.canvas.add(this.rows[r].element);
-      this.rows[r].drawTrack();
+      if (this.rows[r] !== undefined){
+        this.canvas.add(this.rows[r].element);
+        this.rows[r].drawTrack();     
+      }
     }
   }
 

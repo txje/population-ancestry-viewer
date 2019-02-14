@@ -15,9 +15,18 @@ function attacher() {
 
 function download(filename, text) {
   var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  /*
+  var sl=/\\n/gi;
+  var tab=/\\t/gi;
+  var info=/\;/gi;
+  var quote=/\"/gi;
+  var newText= text.replace(sl,"\n");
+  newText= newText.replace(info," ");
+  newText= newText.replace(tab,",");
+  newText= newText.replace(quote,"");
+  */
+  element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
   element.setAttribute('download', filename);
-
   element.style.display = 'none';
   document.body.appendChild(element);
 

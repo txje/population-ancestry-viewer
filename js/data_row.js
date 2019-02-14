@@ -160,65 +160,67 @@ function DataRow(colordata, label, chrom, textdata, color_map, size_mult) {
         // first color may or may not contain height values, if it does, use them
         for(c in colordata) {
             var block = colordata[c];
-            block[0] = parseInt(block[0]);
-            block[1] = parseInt(block[1]);
-            // this starts the current block at the midpoint of the overlap between the last block
-            // the end may still be drawn under the next block, but this is invisible
-            if(c == 0 || block[0] >= colordata[c-1][1])
-                var st = block[0];
-            else
-                var st = block[0] + (colordata[c-1][1] - block[0]) / 2;
-            if(st > this.start)
-                var block_start = (st-this.begin) * unit;
-            else
-                var block_start = 0;
-            if(block[1] < this.end)
-                var block_end = (block[1]-this.begin) * unit;
-            else
-                var block_end = (this.stop-this.begin) * unit;
-            if(block[2] != null) {
-                // height
-                if(this.showcolordata2)
-                    var top = this.height2 - 1;
+            if (block[2] !== "undef"){
+                block[0] = parseInt(block[0]);
+                block[1] = parseInt(block[1]);
+                // this starts the current block at the midpoint of the overlap between the last block
+                // the end may still be drawn under the next block, but this is invisible
+                if(c == 0 || block[0] >= colordata[c-1][1])
+                    var st = block[0];
                 else
-                    var top = 0;
-                if(block.length > 3) {
-                    top += this.height - (block[3]/100*this.height);
-                    var h = block[3]/100*this.height;
-                }
-                else {
-                    var h = this.height;
-                }
-                // regular or histogram
-                // histogram
-                if(block[2][0] instanceof Array) {
-                    var bottom = top + h - this.gap;
-                    for(i in block[2]) {
-                        var color = color_map[block[2][i][0]];
-                        var ychange = block[2][i][1] * (h - this.gap)/100;
-                        // opacity
-                        if(color.length > 3)
-                            var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
-                        else
-                            var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
-                        ctx.fillStyle = color;
-                        ctx.fillRect(block_start,bottom - ychange,Math.max(1, block_end-block_start),ychange);
-                        bottom -= ychange;
+                    var st = block[0] + (colordata[c-1][1] - block[0]) / 2;
+                if(st > this.start)
+                    var block_start = (st-this.begin) * unit;
+                else
+                    var block_start = 0;
+                if(block[1] < this.end)
+                    var block_end = (block[1]-this.begin) * unit;
+                else
+                    var block_end = (this.stop-this.begin) * unit;
+                if(block[2] != null) {
+                    // height
+                    if(this.showcolordata2)
+                        var top = this.height2 - 1;
+                    else
+                        var top = 0;
+                    if(block.length > 3) {
+                        top += this.height - (block[3]/100*this.height);
+                        var h = block[3]/100*this.height;
                     }
-                }
-                // regular
-                else {
-                  // opacity
-                  var color = color_map[block[2]]
-                  if(color == null) {
-                    console.log(block[2], color_map);
-                  }
-                  if(color.length > 3)
-                    var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
-                  else
-                    var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
-                  ctx.fillStyle = color;
-                  ctx.fillRect(block_start,top,Math.max(1, block_end-block_start),h - this.gap);
+                    else {
+                        var h = this.height;
+                    }
+                    // regular or histogram
+                    // histogram
+                    if(block[2][0] instanceof Array) {
+                        var bottom = top + h - this.gap;
+                        for(i in block[2]) {
+                            var color = color_map[block[2][i][0]];
+                            var ychange = block[2][i][1] * (h - this.gap)/100;
+                            // opacity
+                            if(color.length > 3)
+                                var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
+                            else
+                                var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
+                            ctx.fillStyle = color;
+                            ctx.fillRect(block_start,bottom - ychange,Math.max(1, block_end-block_start),ychange);
+                            bottom -= ychange;
+                        }
+                    }
+                    // regular
+                    else {
+                      // opacity
+                      var color = color_map[block[2]]
+                      if(color == null) {
+                        console.log(block[2], color_map);
+                      }
+                      if(color.length > 3)
+                        var color = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')';
+                      else
+                        var color = 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
+                      ctx.fillStyle = color;
+                      ctx.fillRect(block_start,top,Math.max(1, block_end-block_start),h - this.gap);
+                    }
                 }
             }
         }

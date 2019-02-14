@@ -101,7 +101,7 @@ function getStrains() {
         if(sel.childNodes) {
             for(var i = 0; i < sel.childNodes.length; i++) {
                 if(sel.childNodes[i].selected || selected_sets[a]) { // if selected, or whole set selected
-                    strains.push(sel.childNodes[i].value); //.replace('/', '_')
+                    strains.push(sel.childNodes[i].value); 
                 }
             }
         }
@@ -139,7 +139,6 @@ function getStartEnd() {
         $('#end_pos').parent().parent().removeClass('error');
     }
     if(!isNaN(start) && !isNaN(end)) {
-        console.log(start + ' - ' + end);
         return [start, end];
     }
     return null;
@@ -154,7 +153,7 @@ function getParams() {
     var range = getStartEnd();
     var strains = getStrains();
     var chrom = getChrom();
-    if (false && !(range && strains && chrom)) {
+    if (!(range && strains && chrom)) {
         $('#error_box').show();
         return null;
     }
@@ -230,7 +229,7 @@ function toggle_full_set(event) {
         
         // disable the chzn selector
         $selector.attr('data-placeholder', 'ALL SELECTED');
-        $selector.attr('disabled', true);
+        $selector.attr('disabled', false);
         $selector.trigger("chosen:updated");
         
         selected_sets[i] = true;
@@ -280,7 +279,8 @@ function toggle_full_set(event) {
    -------------------------------------------------------
 */
 function setup() {
-    $.getJSON("meta.json", function(data) {
+	file = "meta.json";
+	$.getJSON(file, function(data) {
         metadata = data;
         viewer = new Viewer(document, 1, metadata);
         document.getElementById('tracks').appendChild(viewer.element);
@@ -311,8 +311,7 @@ function addChroms(chroms) {
         $option.attr('value', chrom);
         $select.append($option);
     }
-    //dispBounds(0, chroms[$('#chrom').val()].length);
-    dispBounds("20M", "20.09M");
+    dispBounds(1, chroms[$('#chrom').val()].length);
 }
 
 function dispBounds(st, en) {
@@ -347,7 +346,6 @@ function addSets(sets) {
         
         $label = $('<label>');
         $label.addClass('input-group-addon');
-        //$label.attr('for', set_name + '_strains');
         $label.append(set_name + ' ');
         // pick all button
         $all = $('<i>');
@@ -365,8 +363,8 @@ function addSets(sets) {
 
 </script>
 </head>
-<body onload='setup()'>
   
+	<body onload='setup()'>
     <div class="container">
 
       <header class='page-header'>
@@ -380,28 +378,43 @@ function addSets(sets) {
         <p class='lead'>
           Comparative genome browser
         </p>
+        <p>
+         For comments or questions, <a href="http://github.com/txje/population-ancestry-viewer">go to github</a>.
+        </p>
         <div class='subnav' id='subnav'>
           <ul class='nav nav-tabs'>
             <li><a href="#description">Description</a></li>
             <li><a href="#viewer">Viewer</a></li>
+            <li><a href="#reference">Reference</a></li>
           </ul>
         </div>
       </header>
       
       <div class="well" style='margin-top:40px'>
       <section id='description'>
-        <p>
-          The Population Genomics Viewer (PGV) is a custom genome browser designed to provide the user with reliable and detailed answers to questions on the haplotype diversity and phylogenetic origin of the genetic variation underlying any genomic region.
-          <br/>
-          <br/> 
-          PGV allows the user to select a region of the genome and a set of samples.  The region is selected by specifying the start (e.g. 31200000 or 31200K or 31.2M), and end of the interval and the chromosome (i.e, autosome number and X chromosome).  Samples can be selected by name or by entire set.
-          <br/>
-          <br/>
+				<p>
+					<h4>PGV presentation</h4>
+					The Population Genomics Viewer (PGV) is a custom genome browser designed to provide the user answers to questions on the haplotype diversity and phylogenetic origin of the genetic variation underlying any genomic region (adapted from MPV: Wang et al. 2012). 
+					<br/><br/>
+					<h4>Selection of a genomic region</h4>
+					PGV allows the user to select a region of the genome and a set of samples (lines). 
+					<br/>
+					The genomic region is selected by specifying the chromosome (e.g. "Chr1"), the start (e.g. "31200000" or "31200K" or "31.2M"), and end of the interval.
+					Samples can be selected by name or by entire set.
+					<br/>
+					The selection of the whole dataset takes precedence over the selection of the lines
+					<br/><br/>
+					<h4>Visualization and dynamic functions</h4>
+					To allow users to further customize the visualization to their needs, PGV  support dynamic recoloring of haplotypes blocks (Wang et al. 2012; Figure 4) as well as dynamic sorting of samples at a user selected position (Wang et al. 2012; Figure 5). Dynamic coloring and reordering tools facilitate comparison of features by visually aligning regions where genomes are similar and different. To zoom in, you just need to click and drag across a track to highlight a region, and then click Zoom.
+					<br/><br/>
+					<h4>Download button</h4>
+					Each track presents a download button which allows the user to download the data as a tab-separated text file.
+					<br/><br/>
           <h4>Experiment Overview</h4>
           <div id="overview">
           </div>
           <br/>
-          <h4>Data sets</h2>
+          <h4>Data display settings</h2>
           <div id="datasets">
           </div>
         </p>
@@ -431,28 +444,26 @@ function addSets(sets) {
                 <label class='input-group-addon' for="start_pos">Start</label>
                 <input class="form-control" id="start_pos" name="start_pos" type="text"/>
               </div>
-              
               <div class="input-group">
                 <label class="input-group-addon" for="end_pos">End</label>
                 <input class="form-control" id="end_pos" name="end_pos" type="text"/>
               </div>
-              
               <div class="input-group" id='strain_sets'>
               </div>
 
               <div class="input-group">
                 <div class="controls">
                   <p class="help-block">
-                    Type a sample name to search. Multiple samples can be selected.
+                    Type a sample name to search.
                     <br/>
                     Click the box next to the set name to select all.
                   </p>
-                  <br/>
-                  <p class="alert alert-error" id='error_box' style='width:400px; display:none;'>
-                    <strong>Uh oh.</strong> Fix the highlighted fields and try again.
+                  
+                  <p class="alert alert-error" id='error_box' style='width:400px; display:none;border-color: red; text-align: center;'>
+                    <font color ="red"> <strong>/!\ WARNING /!\</strong> <br/>Please select panel or specific line </font>
                   </p>
                   <br/>
-                  <a onclick='update()' class='btn btn-default' id='view_filter_button'><i class="glyphicon glyphicon-refresh"></i> View filter data</a>
+                  <a onclick='update()' class='btn btn-primary' id='view_filter_button'><i class="glyphicon glyphicon-refresh"></i> View filter data</a>
                 </div>
               </div>
               
@@ -489,7 +500,16 @@ function addSets(sets) {
         </p>
       </section>
       </div>
-
+      <div class="well" style='margin-top:40px'>
+        <section id="reference">
+          <h2>Reference</h2>
+          <p>
+            Adapted from:
+            <br>
+            <a href ="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3311102/pdf/1471-2105-13-S3-S13.pdf">Jeremy R. Wang, Fernando Pardo-Manuel de Villena, and Leonard McMillan. Comparative analysis and visualization of multiple collinear genomes. BMC Bioinformatics, 2012. </a>
+          </p>
+        </section>
+      </div>
     </div><!-- /container -->
 
 </body>

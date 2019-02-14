@@ -16,7 +16,6 @@ import pysam
 import json
 import cgi
 
-
 # returns a list of (sample, filename)
 def make_filenames(templates, samples, chrom, sample_meta):
   template = templates["*"] # this is the only mode supported right now, with one file template per track
@@ -35,6 +34,16 @@ def filter_bed(samples, chrom, start_pos, end_pos, data_dir, meta, sample_meta):
     for s,f in make_filenames(meta["files"], samples, chrom, sample_meta):
       tbx = pysam.TabixFile("%s/%s" % (data_dir, f))
       data[s] = [row.split('\t')[1:4] for row in tbx.fetch(chrom, start_pos, end_pos)] # return only (start, end, name) [0] is chrom, 4+ are other data, if any
+    return data
+
+def filter_genes(chrom, start_pos, end_pos, data_dir, meta, sample_meta, gene_name):
+    data = {}
+    for s,f in make_filenames(meta["files"], ['Gene'], chrom, sample_meta):
+      tbx = pysam.TabixFile("%s/%s" % (data_dir, f))
+      if gene_name==1:
+        data['Gene'] = [row.split('\t')[1:5] for row in tbx.fetch(chrom, start_pos, end_pos)] # return only (start, end, name) [0] is chrom, 4+ are other data, if any
+      else:
+        data['Gene'] = [row.split('\t')[1:4] for row in tbx.fetch(chrom, start_pos, end_pos)] # return only (start, end, name) [0] is chrom, 4+ are other data, if any
     return data
 
 def filter_vcf(samples, chrom, start_pos, end_pos, data_dir, meta, sample_meta):
@@ -59,12 +68,12 @@ def filter_vcf(samples, chrom, start_pos, end_pos, data_dir, meta, sample_meta):
       data[s] = [row[:9] + [row[r].split(':')[gt_part] for r in sample_indices] for row in [fields]+rows]
     return data
 
-def get_tracks(samples, chrom, tracks, bounds=[None, None], json_fmt=True):
+# def get_tracks(samples, chrom, tracks, bounds=[None, None]):
+def get_tracks(samples, chrom, tracks, fmt, gene_name, bounds=[None, None]):
     if os.path.exists("services"):
       data_dir = "services/data/" # dev
     else:
       data_dir = "data/" # production
-
     meta = json.load(open("meta.json"))
     track_meta = {}
     for t in meta["tracks"]:
@@ -79,49 +88,51 @@ def get_tracks(samples, chrom, tracks, bounds=[None, None], json_fmt=True):
       data = None
       if track_meta[t]["maximum_resolution"] <= 0 or track_meta[t]["maximum_resolution"] > (bounds[1] - bounds[0]):
         if track_meta[t]["type"] == "vcf":
+          #print("getting {} (vcf) for {}: {}-{}".format(t, chrom, bounds[0], bounds[1]))
           data = filter_vcf(samples, chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta)
-          if not json_fmt:
-            #out = "CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	" + "\t".join(samples) + "\n" + "\n".join(['\t'.join(d) for s in data for d in data[s]])
+          if fmt == "text":
             out = "\n".join(['\t'.join(d) for s in data for d in data[s]])
             return out
         elif track_meta[t]["type"] == "bed":
           data = filter_bed(samples, chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta)
-          if not json_fmt:
-            out = "sample	start	end	name\n" + "\n".join(['\t'.join([s] + d) for s in data for d in data[s]])
+          if fmt == "text":
+            out = "sample\tstart\tend\tname\n" + '\n'.join(['\t'.join([s] + d) for s in data for d in data[s]])
             return out
-      return_tracks[t] = data
+        elif track_meta[t]["type"] == "genes":
+          data = filter_genes(chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta, gene_name)
+          if fmt == "text":
+            out ="chromosome\tstart\tend\tgene_id\tJbrowse link\n"
+            for s in data:
+              for d in data[s]:
+                out += chrom + "\t"
+                out += d[0]+"\t"+d[1]+"\t"+d[3]
+                out += '\t'+ track_meta[t]["url"] + d[3] +'\n'
+            return out
+        return_tracks[t] = data
 
     return return_tracks
 
 if __name__ == '__main__':
-  # log user access
-  #addy = os.environ["REMOTE_ADDR"]
-  #now = time.strftime("%H:%M:%S %m/%d/%Y")
-  #fout = open("log/users.log", 'a')
-  #fout.write(str(addy) + "," + str(now) + "\n")
-  #fout.close()
+  print "Content-type: text/plain\n"
 
-  import cgitb
-  cgitb.enable()
-
+  #get parameter from HTML Form
   form = cgi.FieldStorage()
-
   name = form.getvalue('name')
   chrom = form.getvalue('chrom')
   start = int(form.getvalue('start'))
   end = int(form.getvalue('end'))
   fmt = form.getvalue('format')
+  gene_name = int(form.getvalue('gene'))
   if "strain" in form:
     strains = form.getvalue('strain')
     if type(strains) != type([]):
       strains = [strains]
   else:
     strains = None
-  if fmt == "text":
-    print "Content-type: text/plain\n"
-    response = get_tracks(strains, chrom, [name], [start, end], json_fmt=False)
-    print response
-  else: # elif fmt == "json"
-    print "Content-type: text/json\n"
-    response = get_tracks(strains, chrom, [name], [start, end], json_fmt=True)
-    print json.dumps(response)
+  try:
+    response = get_tracks(strains, chrom, [name], fmt, gene_name, [start, end])
+  except IndexError as e:
+    print "No SNP available in the selected frame. Please select another one"
+    raise e
+
+  print json.dumps(response,skipkeys=True)

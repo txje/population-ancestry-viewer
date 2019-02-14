@@ -50,8 +50,7 @@ function RPC(script, handler, params) {
                 eval('data = ' + response);
             }
             catch(err) {
-                handler.error('Error: ' + err);
-                console.error(response)
+                handler.error('Error: ' + response);
                 return;
             }
             handler.callback(data);

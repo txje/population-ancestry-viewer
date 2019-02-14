@@ -33,7 +33,6 @@ function ColorTrack() {
     this.flow.add(this.track.element);
     
     if(this.downloadable) {
-      console.log("making download btn");
       this.button = new Button('Download ' + this.title, attacher(this, this.dump), 'btn-primary', 'glyphicon glyphicon-download');
       this.flow.add(this.button.element);
     }
@@ -49,7 +48,7 @@ function ColorTrack() {
 
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       if(this.tracktype == 'strain')
         for(s in strains)
@@ -67,12 +66,8 @@ function ColorTrack() {
     this.strains = strains;
   }
   
-  this.request = function(chrom, strains, fmt) {
-    if(fmt == "json") {
-      RPC('services/service.py', this, {"chrom":chrom, "strain":strains, "data_type":this.dataset, "format":fmt});
-    } else {
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'data_type': this.dataset, 'chrom':chrom, 'strain':strains, 'format':fmt});
-    }
+   this.dump=function(){
+    this.request(this.chrom, this.start, this.end, this.strains, "text", 1);
   }
   
   this.callback = function(data) {
@@ -118,25 +113,14 @@ function ColorTrack() {
   }
 }
 
-
 function VCF(window, parent, width, height, height2, trackdata, clickhandler, metadata) {
-  this.request = function(chrom, start, end, strains, fmt) {
-    if(fmt == "json") {
-      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
-    } else {
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
-    }
-  }
-  this.dump = function() {
-    this.request(this.chrom, this.start, this.end, this.strains, "text");
-  }
 
   // basically uses the super() constructor
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
-
+ 
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
@@ -150,6 +134,16 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
     this.end = end;
     this.strains = strains;
   }
+
+  this.request = function(chrom, start, end, strains, fmt) {
+    if (fmt == "json"){
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
+    }
+    else{
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
+    }
+  }
+
   this.callback = function(data) {
     /* --------------------------------------------------
      * we need to deconvolve the SNP data here and only
@@ -170,7 +164,7 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
         d[0] = parseInt(d[0]);
         d[1] = parseInt(d[1]);
         var allele = parseInt(d[i][0]) + parseInt(d[i][2]);
-        strain_data.push([d[1], d[1]+(d[4]=="<DEL>"?0:d[4].length), (allele==0?"REF":(allele==1?"HET":"ALT"))]); // (start, end, REF/HET/ALT)
+        strain_data.push([d[1], d[1]+(d[4]=="<DEL>"?0:d[4].length), (allele==0?"REF":(allele==1?"HET":(allele==2?"ALT":"NA")))]); // (start, end, REF/HET/ALT)
       }
       this.track.addColorData(s, 0, metadata["maximum_resolution"], strain_data);
     }
@@ -253,27 +247,16 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
     // update tracks
     this.track.update(this.start, this.end, this.width, this.height, 0, 2, 100)
   }
-  this.request = function(chrom, start, end, strains, fmt) {
-    if(fmt == "json") {
-      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
-    } else {
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.txt"), {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt});
-    }
-  }
-  this.dump = function() {
-    this.request(this.chrom, this.start, this.end, this.strains, "text");
-  }
 
   // basically uses the super() constructor
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
-
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
-      this.request(chrom, start, end, strains, fmt="json");
+      this.request(chrom, start, end, strains, "json");
     }
     else {
       this.track.update(start, end, this.width, this.height, this.height2, 2, 100);
@@ -283,6 +266,20 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
     this.end = end;
     this.strains = strains;
   }
+
+  this.request = function(chrom, start, end, strains, fmt) {
+    if (fmt == "json"){;
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
+    }
+    else{
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
+    }
+  }
+
+  this.dump=function(){
+    this.request(this.chrom, this.start, this.end, this.strains, 'text');
+  }
+
   this.callback = function(data) {
     for(s in data[metadata.name]) {
       this.track.addColorData(s, 0, metadata["maximum_resolution"], data[metadata.name][s]);
@@ -297,5 +294,118 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
   }
 }
 
+function GENES(window, parent, width, height, height2, trackdata, clickhandler, metadata) {
+
+  this.recolor = function() {
+    // in the original MPV, colors were hardcoded, but PGV uses an indexed hash (metadata.colors, which MAY NOT all be integers)
+    for(r in this.track.rows) {
+      for(b in this.track.rows[r].colordata) {
+        this.track.rows[r].colordata[b][2] = this.track.rows[r].colordata[b][2] + "_unrecolored"; // mark this color block as NOT YET CHANGED by appending to the color name (key)
+      }
+    }
+
+    // convert hash keys to a list of available colors
+    var available_colors = [];
+    for(col in metadata.colors) {
+      available_colors.push(col);
+    }
+    var n_colors = available_colors.length;
+    metadata.colors["unrecolored"] = [255,255,255,1];
+
+    var color_index = 0;
+    for(r in this.track.rows) { // for each track, top to bottom
+      var newcolor = false;
+      var indices = [];
+      for(var r2 = parseInt(r)+1; r2 < this.track.rows.length; r2++) {
+          indices.push(0);
+      }
+      for(b in this.track.rows[r].colordata) { // for each color block
+        var source_block = this.track.rows[r].colordata[b];
+        if(!(source_block[2].endsWith("_unrecolored"))) // color already assigned (from previous row)
+          continue;
+        var newcolor = true;
+        for(var r2 = parseInt(r)+1; r2 < this.track.rows.length; r2++) { // for each successive row
+          while(indices[r2-r-1] < this.track.rows[r2].colordata.length && this.track.rows[r2].colordata[indices[r2-r-1]][1] < source_block[0])
+            indices[r2-r-1] += 1;
+          var index = indices[r2-r-1];
+          while(index < this.track.rows[r2].colordata.length && this.track.rows[r2].colordata[index][0] <= source_block[1]) {
+            // overlapping
+            var match_block = this.track.rows[r2].colordata[index];
+            if(match_block.length == 3 && match_block[2] == source_block[2]) {
+              // deal with partial overlap
+              if(match_block[0] < source_block[0]) { // hang over left side
+                this.track.rows[r2].colordata.splice(index, 0, [match_block[0], source_block[0]-1, match_block[2]]);
+                index += 1;
+                this.track.rows[r2].colordata[index][0] = source_block[0];
+              }
+              if(match_block[1] > source_block[1]) { // hang over right side
+                this.track.rows[r2].colordata.splice(index+1, 0, [source_block[1]+1, match_block[1], match_block[2]]);
+                this.track.rows[r2].colordata[index][1] = source_block[1];
+              }
+              if(color_index < n_colors) {
+                this.track.rows[r2].colordata[index][2] = available_colors[color_index];
+              } else {
+                this.track.rows[r2].colordata[index][2] = "unrecolored";
+              }
+            }
+            index += 1;
+          }
+        }
+        if(color_index < n_colors) {
+          this.track.rows[r].colordata[b][2] = available_colors[color_index];
+        } else {
+          this.track.rows[r].colordata[b][2] = "unrecolored";
+        }
+      }
+      if(newcolor)
+        color_index += 1;
+    }
+    // update tracks
+    this.track.update(this.start, this.end, this.width, this.height, 0, 2, 100)
+  }
+
+  // basically uses the super() constructor
+  this.init(window, parent, width, height, height2, trackdata, clickhandler);
+
+  // this.update = function(chrom, start, end, strains) {
+  this.update = function(chrom, start, end, strains) {
+    strains = ['Gene'];	  
+    this.track.resetHighlighter();
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
+      this.track.empty();
+      for(s in strains)
+        this.track.addRow(strains[s], chrom, metadata.colors);
+      this.request(chrom, start, end, strains, 'json');
+    }
+    else {
+      this.track.update(start, end, this.width, this.height, this.height2, 2, 100);
+    }
+    this.chrom = chrom;
+    this.start = start;
+    this.end = end;
+    this.strains = strains;
+  }
+  this.request = function(chrom, start, end, strains, fmt) {
+    if (fmt == "json"){
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
+    }
+    else{
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
+    }
+  }
+  this.callback = function(data) {
+    for(s in data[metadata.name]) {
+      this.track.addColorData(s, 0, metadata["maximum_resolution"], data[metadata.name][s]);
+    }
+    this.track.update(this.start, this.end, this.width, this.height, this.height2, 2, 100); // last 2: gap, left
+  }
+  this.error = function(err) {
+    alert(err);
+  }
+  this.toString = function() {
+    return metadata.name;
+  }
+}
 VCF.prototype = new ColorTrack();
 BED.prototype = new ColorTrack();
+GENES.prototype = new ColorTrack();
