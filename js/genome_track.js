@@ -39,7 +39,7 @@ function GenomeTrack(window, parent, t, sortable, clickhandler) {
   
   // determine if the range is outside the currently displayed resolution range
   this.outOfRange = function(start, end) {
-    if(end - start < this.min_resolution || (this.max_resolution != null && end - start > this.max_resolution) || end > this.data_max || start < this.data_min)
+    if(end - start < this.min_resolution || (this.max_resolution != null && end - start > this.max_resolution) || this.data_max == null || end > this.data_max || this.data_min == null || start < this.data_min)
       return true;
     return false;
   }

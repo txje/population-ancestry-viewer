@@ -69,12 +69,12 @@ def filter_vcf(samples, chrom, start_pos, end_pos, data_dir, meta, sample_meta):
     return data
 
 # def get_tracks(samples, chrom, tracks, bounds=[None, None]):
-def get_tracks(shareholder, samples, chrom, tracks, fmt, gene_name, bounds=[None, None]):
+def get_tracks(samples, chrom, tracks, fmt, gene_name, bounds=[None, None]):
     if os.path.exists("services"):
       data_dir = "services/data/" # dev
     else:
       data_dir = "data/" # production
-    meta = json.load(open("meta."+shareholder+".json"))
+    meta = json.load(open("meta.json"))
     track_meta = {}
     for t in meta["tracks"]:
       track_meta[t["name"]] = t
@@ -88,6 +88,7 @@ def get_tracks(shareholder, samples, chrom, tracks, fmt, gene_name, bounds=[None
       data = None
       if track_meta[t]["maximum_resolution"] <= 0 or track_meta[t]["maximum_resolution"] > (bounds[1] - bounds[0]):
         if track_meta[t]["type"] == "vcf":
+          #print("getting {} (vcf) for {}: {}-{}".format(t, chrom, bounds[0], bounds[1]))
           data = filter_vcf(samples, chrom, bounds[0], bounds[1], data_dir, track_meta[t], sample_meta)
           if fmt == "text":
             out = "\n".join(['\t'.join(d) for s in data for d in data[s]])
@@ -112,8 +113,9 @@ def get_tracks(shareholder, samples, chrom, tracks, fmt, gene_name, bounds=[None
     return return_tracks
 
 if __name__ == '__main__':
-  
-  #get parameter from HTML Form 
+  print "Content-type: text/plain\n"
+
+  #get parameter from HTML Form
   form = cgi.FieldStorage()
   name = form.getvalue('name')
   chrom = form.getvalue('chrom')
@@ -121,17 +123,14 @@ if __name__ == '__main__':
   end = int(form.getvalue('end'))
   fmt = form.getvalue('format')
   gene_name = int(form.getvalue('gene'))
-  shareholder = form.getvalue('shareholder')
   if "strain" in form:
     strains = form.getvalue('strain')
     if type(strains) != type([]):
       strains = [strains]
   else:
     strains = None
-  print "Content-type: text/plain\n"
   try:
-    response = get_tracks(shareholder, strains, chrom, [name], fmt, gene_name, [start, end])
-    pass
+    response = get_tracks(strains, chrom, [name], fmt, gene_name, [start, end])
   except IndexError as e:
     print "No SNP available in the selected frame. Please select another one"
     raise e

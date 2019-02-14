@@ -48,7 +48,7 @@ function ColorTrack() {
 
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       if(this.tracktype == 'strain')
         for(s in strains)
@@ -120,7 +120,7 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
  
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
@@ -137,10 +137,10 @@ function VCF(window, parent, width, height, height2, trackdata, clickhandler, me
 
   this.request = function(chrom, start, end, strains, fmt) {
     if (fmt == "json"){
-      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0, 'shareholder':shareholder});
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
     }
     else{
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1, 'shareholder':shareholder});
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
     }
   }
 
@@ -252,7 +252,7 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
   this.init(window, parent, width, height, height2, trackdata, clickhandler);
   this.update = function(chrom, start, end, strains) {
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
@@ -269,10 +269,10 @@ function BED(window, parent, width, height, height2, trackdata, clickhandler, me
 
   this.request = function(chrom, start, end, strains, fmt) {
     if (fmt == "json"){;
-      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0, 'shareholder':shareholder});
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
     }
     else{
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1, 'shareholder':shareholder});
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
     }
   }
 
@@ -371,7 +371,7 @@ function GENES(window, parent, width, height, height2, trackdata, clickhandler, 
   this.update = function(chrom, start, end, strains) {
     strains = ['Gene'];	  
     this.track.resetHighlighter();
-    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(this.start, this.end)) {
+    if(strains != this.strains || chrom != this.chrom || this.track.outOfRange(start, end)) {
       this.track.empty();
       for(s in strains)
         this.track.addRow(strains[s], chrom, metadata.colors);
@@ -387,10 +387,10 @@ function GENES(window, parent, width, height, height2, trackdata, clickhandler, 
   }
   this.request = function(chrom, start, end, strains, fmt) {
     if (fmt == "json"){
-      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0, 'shareholder':shareholder});
+      RPC('services/service.py', this, {'name': metadata.name, 'chrom':chrom, 'start':start, 'end':end, 'strain':strains, 'format':fmt, 'gene':0});
     }
     else{
-      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1, 'shareholder':shareholder});
+      remote_dump('services/service.py', attacher(this, download, metadata.name + "_download.csv"), {'data_type': this.dataset, 'chrom':chrom, 'start':start, 'end':end, 'name':this.title, 'strain':strains, 'format':fmt, 'gene':1});
     }
   }
   this.callback = function(data) {
