@@ -1,0 +1,85 @@
+{
+  "description": "Sample DataSet for DEMO visualisation",
+
+  "samples": [
+    {"name" : "Line1", "set": "DEMO"},
+    {"name" : "Line2", "set": "DEMO"},
+    {"name" : "Line3", "set": "DEMO"},
+    {"name" : "Line4", "set": "DEMO"}
+  ],
+
+  "chromosomes": [
+    {"name":"1", "length": 301354135, "display": "Chr1"},
+    {"name":"2", "length": 237068873, "display": "Chr2"}
+  ],
+
+  "tracks": [
+    {
+      "name": "Integrated variants",
+      "description": "SNPs",
+      "maximum_resolution": 1000000000,
+      "files": {
+        "*": "DEMO/ALL.chr<chrom>.matrice_DEMO.vcf.gz"
+      },
+      "colors": {
+        "REF": [49,117,175,1],
+        "HET": [117,32,201,1],
+        "ALT": [191,63,63,1],
+        "NA": [200,200,200,1]
+      },
+      "type": "vcf"
+    },
+      {
+          "name": "Genes",
+      "url": "https://YOUR_JBROWSE/?data=XXXXX&loc=",
+      "description": "Genes Positions",
+          "maximum_resolution": 0,
+          "files": {
+            "*": "DEMO/Chr<chrom>.Gene.sort.bed.gz"
+          },
+          "colors": {
+                 "undet": [200,200,200,1],
+                  "1": [153,153,153,1]
+          },
+          "type": "genes"
+      },
+    {
+      "name": "Haplotypes (blocHaplo1)",
+      "description": "blocHaplo1 visualisation",
+      "maximum_resolution": 0,
+      "files": {
+        "*": "<set>/<sample>.bed.gz"
+      },
+      "colors": {
+        "undet": [122,216,66,1],
+        "1": [202,83,213,1],
+        "2": [221,77,44,1],
+        "3": [59,61,82,1],
+        "4": [135,215,205,1],
+        "5": [141,117,56,1],
+        "6": [205,173,201,1],
+        "7": [213,69,101,1],
+        "8": [105,217,140,1],
+        "9": [200,207,148,1],
+        "10": [208,208,72,1],
+        "11": [134,119,218,1],
+        "12": [91,141,59,1],
+        "13": [204,137,127,1],
+        "14": [97,133,120,1],
+        "15": [206,84,160,1],
+        "16": [82,42,35,1],
+        "17": [123,51,88,1],
+        "18": [57,71,38,1],
+        "19": [106,155,201,1],
+        "20": [153,66,43,1],
+        "21": [216,148,59,1],
+        "22": [100,77,141,1],
+        "23": [253,233,217,1],
+        "24": [218,231,246,1],
+        "25": [0,255,0,1],
+        "26": [0,255,255,1]
+      },
+      "type": "bed"
+    }
+  ]
+}
